@@ -6,10 +6,11 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
-using Zoo = vector<Animal>;
+using Zoo = vector<unique_ptr<Animal>>;
 
 // Эта функция получает на вход поток ввода и читает из него описание зверей.
 // Если очередное слово этого текста - Tiger, Wolf или Fox, функция должна поместить соответствующего зверя в зоопарк.
@@ -19,14 +20,11 @@ Zoo CreateZoo(istream& in) {
   string word;
   while (in >> word) {
     if (word == "Tiger") {
-      Tiger t;
-      zoo.push_back(t);
+      zoo.push_back(make_unique<Tiger>());
     } else if (word == "Wolf") {
-      Wolf w;
-      zoo.push_back(w);
+      zoo.push_back(make_unique<Wolf>());
     } else if (word == "Fox") {
-      Fox f;
-      zoo.push_back(f);
+      zoo.push_back(make_unique<Fox>());
     } else {
       throw runtime_error("Unknown animal!");
     }
@@ -39,7 +37,7 @@ Zoo CreateZoo(istream& in) {
 // Разделяйте голоса разных зверей символом перевода строки '\n'.
 void Process(const Zoo& zoo, ostream& out) {
   for (const auto& animal : zoo) {
-    out << animal.Voice() << "\n";
+    out << animal->Voice() << "\n";
   }
 }
 

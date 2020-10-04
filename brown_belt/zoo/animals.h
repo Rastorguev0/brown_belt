@@ -5,8 +5,7 @@ public:
   virtual std::string Voice() const {
     return "Not implemented yet";
   }
-  virtual ~Animal() {
-  }
+  virtual ~Animal() = default;
 };
 
 
