@@ -19,11 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_runner.h" />
-    <ClInclude Include="zoo\animals.h" />
+    <ClCompile Include="pipeline.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="zoo\zoo.cpp" />
+    <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
