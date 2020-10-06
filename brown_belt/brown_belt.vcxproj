@@ -19,10 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pipeline.cpp" />
+    <ClInclude Include="tree\Common.h" />
+    <ClInclude Include="tree\test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_runner.h" />
+    <ClCompile Include="tree\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
