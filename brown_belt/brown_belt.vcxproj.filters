@@ -26,5 +26,8 @@
     <ClCompile Include="tree\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tree\common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

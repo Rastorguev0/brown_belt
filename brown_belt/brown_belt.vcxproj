@@ -23,6 +23,7 @@
     <ClInclude Include="tree\test_runner.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="tree\common.cpp" />
     <ClCompile Include="tree\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
