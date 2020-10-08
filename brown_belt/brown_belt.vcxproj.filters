@@ -15,18 +15,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tree\Common.h">
+    <ClInclude Include="textures\test_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tree\test_runner.h">
+    <ClInclude Include="textures\Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textures\Textures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tree\main.cpp">
+    <ClCompile Include="textures\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tree\common.cpp">
+    <ClCompile Include="textures\Textures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textures\Solution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

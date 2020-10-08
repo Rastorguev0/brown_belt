@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tree\Common.h" />
-    <ClInclude Include="tree\test_runner.h" />
+    <ClInclude Include="textures\Common.h" />
+    <ClInclude Include="textures\test_runner.h" />
+    <ClInclude Include="textures\Textures.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tree\common.cpp" />
-    <ClCompile Include="tree\main.cpp" />
+    <ClCompile Include="textures\main.cpp" />
+    <ClCompile Include="textures\Solution.cpp" />
+    <ClCompile Include="textures\Textures.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
