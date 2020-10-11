@@ -15,24 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="textures\test_runner.h">
+    <ClInclude Include="cache\test_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="textures\Common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="textures\Textures.h">
+    <ClInclude Include="cache\Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="textures\main.cpp">
+    <ClCompile Include="cache\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="textures\Textures.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="textures\Solution.cpp">
+    <ClCompile Include="cache\Solution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
