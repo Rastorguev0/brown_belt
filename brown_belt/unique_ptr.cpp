@@ -1,7 +1,8 @@
 #include "test_runner.h"
 
 #include <cstddef>  // нужно для nullptr_t
-#include <iostream>
+#include <algorithm>
+#include <algorithm>
 
 using namespace std;
 
@@ -14,29 +15,51 @@ public:
 	UniquePtr() : data(nullptr) {}
 	UniquePtr(T* ptr) : data(ptr) {}
 	UniquePtr(const UniquePtr&) = delete;
-	UniquePtr(UniquePtr&& other) : data(other.Get()) {
-
+	UniquePtr(UniquePtr&& other) : data(other.data) {
+		other.data = nullptr;
 	}
 	UniquePtr& operator = (const UniquePtr&) = delete;
-	UniquePtr& operator = (nullptr_t) { data = nullptr; }
+	UniquePtr& operator = (nullptr_t) {
+		Reset(nullptr);
+		return *this;
+	}
 	UniquePtr& operator = (UniquePtr&& other) {
-		data = other.Get();
+		if (&other != this) {
+			Reset(other.data);
+			other.data = nullptr;
+		}
+		return *this;
 	}
 	~UniquePtr() {
 		delete data;
 	}
 
-	T& operator * () const;
+	T& operator * () const {
+		return *data;
+	}
 
-	T* operator -> () const;
+	T* operator -> () const {
+		return data;
+	}
 
-	T* Release();
+	T* Release() {
+		T* buff = data;
+		data = nullptr;
+		return buff;
+	}
 
-	void Reset(T* ptr);
+	void Reset(T* ptr) {
+		delete data;
+		data = ptr;
+	}
 
-	void Swap(UniquePtr& other);
+	void Swap(UniquePtr& other) {
+		swap(other.data, data);
+	}
 
-	T* Get() const;
+	T* Get() const {
+		return data;
+	}
 };
 
 
