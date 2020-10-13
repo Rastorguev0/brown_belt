@@ -19,12 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cache\Common.h" />
-    <ClInclude Include="cache\test_runner.h" />
+    <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cache\main.cpp" />
-    <ClCompile Include="cache\Solution.cpp" />
+    <ClCompile Include="unique_ptr.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
