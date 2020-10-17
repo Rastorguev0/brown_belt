@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -25,13 +26,16 @@ public:
       throw runtime_error("Flight overbooking");
     }
     ++counter;
-    return {this, counter};
+    return { this, counter };
   }
 
 private:
   // Скрываем эту функцию в private, чтобы её мог позвать только соответствующий friend-класс Booking
   void CancelOrComplete(const Booking& booking) {
     --counter;
+  }
+  const string SayMyName() {
+    return "Flight provider";
   }
 
 public:
@@ -57,12 +61,15 @@ public:
       throw runtime_error("Hotel overbooking");
     }
     ++counter;
-    return {this, counter};
+    return { this, counter };
   }
 
 private:
   void CancelOrComplete(const Booking& booking) {
     --counter;
+  }
+  const string SayMyName() {
+    return "Hotel provider";
   }
 
 public:

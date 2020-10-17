@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RAII Booking\booking.h" />
     <ClInclude Include="RAII Booking\new_booking_providers.h" />
     <ClInclude Include="RAII Booking\new_trip_manager.h" />
     <ClInclude Include="RAII Booking\old_booking_providers.h" />
