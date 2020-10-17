@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="print_stats.cpp">
+    <ClCompile Include="slow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
