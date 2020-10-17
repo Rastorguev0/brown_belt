@@ -15,27 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RAII Booking\test_runner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAII Booking\old_trip_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAII Booking\old_booking_providers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAII Booking\new_trip_manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAII Booking\new_booking_providers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RAII Booking\booking.h">
+    <ClInclude Include="test_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RAII Booking\test.cpp">
+    <ClCompile Include="print_stats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

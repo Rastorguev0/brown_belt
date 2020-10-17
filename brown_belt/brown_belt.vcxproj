@@ -19,15 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RAII Booking\booking.h" />
-    <ClInclude Include="RAII Booking\new_booking_providers.h" />
-    <ClInclude Include="RAII Booking\new_trip_manager.h" />
-    <ClInclude Include="RAII Booking\old_booking_providers.h" />
-    <ClInclude Include="RAII Booking\old_trip_manager.h" />
-    <ClInclude Include="RAII Booking\test_runner.h" />
+    <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RAII Booking\test.cpp" />
+    <ClCompile Include="print_stats.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
