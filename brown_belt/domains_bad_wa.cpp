@@ -4,8 +4,9 @@
 #include <string_view>
 #include <vector>
 
-using namespace std;
+#include "test_runner.h"
 
+using namespace std;
 
 bool IsSubdomain(string_view subdomain, string_view domain) {
   auto i = subdomain.size() - 1;
@@ -20,15 +21,15 @@ bool IsSubdomain(string_view subdomain, string_view domain) {
 }
 
 
-vector<string> ReadDomains() {
+vector<string> ReadDomains(istream& input) {
   size_t count;
-  cin >> count;
+  input >> count;
 
-  vector<string> domains;
+  vector<string> domains(count);
   for (size_t i = 0; i < count; ++i) {
     string domain;
-    getline(cin, domain);
-    domains.push_back(domain);
+    getline(input, domain);
+    domains.push_back(move(domain));
   }
   return domains;
 }
