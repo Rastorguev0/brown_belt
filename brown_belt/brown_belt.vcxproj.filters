@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="slow.cpp">
+    <ClCompile Include="domains_bad_wa.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
