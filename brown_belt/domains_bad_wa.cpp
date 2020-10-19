@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <string_view>
 #include <vector>
+#include <string_view>
 #include <set>
 #include <iterator>
 
@@ -14,10 +14,22 @@ class DomainChecker {
 public:
 	explicit DomainChecker(vector<string> domains) {
 		for (auto& domain : domains) {
-			if (!BadDomain(domain)) {
-				reverse(domain.begin(), domain.end());
-				banned_domains.insert(move(domain));
+			reverse(domain.begin(), domain.end());
+			auto it = banned_domains.upper_bound(domain);
+			if (it == banned_domains.begin()) {
+				if (it == banned_domains.end()) {
+					banned_domains.insert(domain);
+					continue;
+				}
+				else it = next(it);
 			}
+			if (IsSubdomain(domain, *prev(it))) {
+				if (domain.size() < prev(it)->size()) {
+					banned_domains.erase(prev(it));
+				}
+				else continue;
+			}
+			banned_domains.insert(move(domain));
 		}
 	}
 
@@ -71,13 +83,11 @@ void ResultOutput(ostream& out, const vector<bool>& bools) {
 	}
 }
 
-string Test(istringstream& input) {
+vector<bool> Test(istringstream& input) {
 	DomainChecker domain_checker(ReadDomains(input));
 	const vector<string> domains_to_check = ReadDomains(input);
 	auto result = CheckDomains(domain_checker, domains_to_check);
-	stringstream out;
-	ResultOutput(out, result);
-	return out.str();
+	return result;
 }
 
 void Test1() {
@@ -96,7 +106,7 @@ maps.com
 maps.ru
 ya.ya
 )");
-	ASSERT_EQUAL(Test(input), "Bad\nBad\nBad\nBad\nBad\nGood\nGood\n");
+	ASSERT_EQUAL(Test(input), vector<bool>({ 1, 1, 1, 1, 1, 0, 0 }));
 }
 
 void Test5() {
@@ -108,9 +118,10 @@ com.ru
 ru.com.en
 ru.com
 )");
-	ASSERT_EQUAL(Test(input), "Good\nGood\nBad\n");
+	ASSERT_EQUAL(Test(input), vector<bool>({0, 0, 1}));
 }
 
+// c.b -- it
 void Test7() {
 	istringstream input(R"(
 2
@@ -119,7 +130,90 @@ a.b.c
 1
 d.b.c
 )");
-	ASSERT_EQUAL(Test(input), "Bad\n");
+	ASSERT_EQUAL(Test(input), vector<bool>({ 1 }));
+}
+
+void Test8() {
+	istringstream input(R"(
+3
+dot.com
+ozon.ru
+com
+1
+aorus.com
+)");
+	ASSERT_EQUAL(Test(input), vector<bool>({ 1 }));
+}
+
+void TestSmth() {
+	{
+		istringstream input(R"(
+4
+earth
+fire
+water
+air
+8
+yandex.ru
+test
+earthshaker
+watermelon
+google.air
+googleair
+fireonme
+.fire
+)");
+		ASSERT_EQUAL(Test(input), vector<bool>({ 0, 0, 0, 0, 1, 0, 0, 1 }));
+	}
+
+	{
+		istringstream input(R"(
+1
+com
+9
+com
+dotcom.com
+dotcom
+com.dotcom
+com.com
+.com
+com.ru
+moc
+comcom.moc
+)");
+		ASSERT_EQUAL(Test(input), vector<bool>({1, 1, 0, 0, 1, 1, 0, 0, 0}));
+	}
+
+	{
+		istringstream input(R"(
+1
+m.vk.com
+1
+vk.com
+)");
+		ASSERT_EQUAL(Test(input), vector<bool>({0}));
+	}
+
+	{
+		istringstream input(R"(
+5
+earth
+fire
+water
+air
+*
+8
+yandex.ru
+test
+earthshaker
+watermelon
+google.air
+googleair
+fireonme
+.fire
+)");
+		ASSERT_EQUAL(Test(input), vector<bool>({ 0, 0, 0, 0, 1, 0, 0, 1 }));
+	}
 }
 
 int main() {
@@ -127,18 +221,13 @@ int main() {
 	RUN_TEST(tr, Test1);
 	RUN_TEST(tr, Test5);
 	RUN_TEST(tr, Test7);
+	RUN_TEST(tr, Test8);
+	RUN_TEST(tr, TestSmth);
+	/*
 	DomainChecker domain_checker(ReadDomains(cin));
 	const vector<string> domains_to_check = ReadDomains(cin);
-	/*
-	size_t insert_pos = 0;
-	for (string& domain : banned_domains) {
-		if (insert_pos == 0 || !IsSubdomain(domain, banned_domains[insert_pos - 1])) {
-			swap(banned_domains[insert_pos++], domain);
-		}
-	}
-	banned_domains.resize(insert_pos);
-	*/
 	auto result = CheckDomains(domain_checker, domains_to_check);
 	ResultOutput(cout, result);
+	*/
 	return 0;
 }
