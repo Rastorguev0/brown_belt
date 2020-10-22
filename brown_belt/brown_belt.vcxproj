@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="domains_bad_wa.cpp" />
+    <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test_runner.h" />
+    <ClCompile Include="domains_bad_wa.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
