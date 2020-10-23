@@ -184,16 +184,54 @@ void PrintCheckResults(const vector<bool>& check_results, ostream& out_stream = 
   }
 }
 
-void TestSimple() {
-  // Your tests here
+void TestSeparator() {
+  Domain domain("");
+  ASSERT_EQUAL(domain.GetPartCount(), 0);
+}
+
+void TestReverse() {
+  Domain domain("ya.ru");
+  vector<string> to_assert(begin(domain.GetReversedParts()), end(domain.GetReversedParts()));
+  sort(to_assert.begin(), to_assert.end());
+  ASSERT_EQUAL(to_assert, vector<string>({"ru", "ya"}));
+}
+
+void TestSubDomain() {
+  Domain domain("com");
+  ASSERT(IsSubdomain(domain, domain));
+}
+
+void TestConfusion() {
+  ASSERT(IsSubdomain(Domain("gog.com"), Domain("com")));
+}
+
+void TestAbsorption() {
+  vector<Domain> domains = { Domain("com"), Domain("dog.com") };
+  DomainChecker dc(domains.begin(), domains.end());
+  ASSERT(dc.IsSubdomain(Domain("eog.com")));
+}
+
+void TestGoodBad() {
+  stringstream str("");
+  PrintCheckResults(vector<bool>({ 1 }), str);
+  ASSERT_EQUAL(str.str(), "Good\n");
+}
+
+void TestEmptyDomain() {
+  stringstream str("1\ndomain.domain\n");
+  auto domains = ReadDomains(str);
+  ASSERT_EQUAL(domains.size(), 1);
+  ASSERT_EQUAL(domains[0], Domain("domain.domain"));
 }
 
 int main() {
   TestRunner tr;
-  RUN_TEST(tr, TestSimple);
-
-  const vector<Domain> banned_domains = ReadDomains();
-  const vector<Domain> domains_to_check = ReadDomains();
-  PrintCheckResults(CheckDomains(banned_domains, domains_to_check));
+  RUN_TEST(tr, TestSeparator);
+  RUN_TEST(tr, TestReverse);
+  RUN_TEST(tr, TestSubDomain);
+  RUN_TEST(tr, TestConfusion);
+  RUN_TEST(tr, TestAbsorption);
+  RUN_TEST(tr, TestGoodBad);
+  RUN_TEST(tr, TestEmptyDomain);
   return 0;
 }

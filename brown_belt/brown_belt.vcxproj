@@ -22,7 +22,7 @@
     <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="domains_bad_wa.cpp" />
+    <ClCompile Include="test_domains.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
