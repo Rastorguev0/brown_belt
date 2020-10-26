@@ -94,7 +94,7 @@ bool AreSegmentsIntersected(IndexSegment lhs, IndexSegment rhs) {
   return !(lhs.right <= rhs.left || rhs.right <= lhs.left);
 }
 
-
+/*!           START MODIFYING          !*/
 struct BulkMoneyAdder {
   double delta = 0.0;
 };
@@ -327,6 +327,7 @@ struct Request {
   enum class Type {
     COMPUTE_INCOME,
     EARN,
+    SPEND,
     PAY_TAX
   };
 
@@ -341,6 +342,7 @@ struct Request {
 const unordered_map<string_view, Request::Type> STR_TO_REQUEST_TYPE = {
     {"ComputeIncome", Request::Type::COMPUTE_INCOME},
     {"Earn", Request::Type::EARN},
+    {"Spend", Request::Type::SPEND},
     {"PayTax", Request::Type::PAY_TAX},
 };
 
@@ -361,7 +363,7 @@ struct ComputeIncomeRequest : ReadRequest<double> {
     date_from = Date::FromString(ReadToken(input));
     date_to = Date::FromString(input);
   }
-
+  // TODO ADD SPENT MONEY PROCESSING SUPPORT
   double Process(const BudgetManager& manager) const override {
     return manager.ComputeSum(MakeDateSegment(date_from, date_to));
   }
@@ -370,23 +372,36 @@ struct ComputeIncomeRequest : ReadRequest<double> {
   Date date_to = START_DATE;
 };
 
-struct EarnRequest : ModifyRequest {
-  EarnRequest() : ModifyRequest(Type::EARN) {}
+struct MoneyTransactions : ModifyRequest {
+  MoneyTransactions(Type type) : ModifyRequest(type) {}
   void ParseFrom(string_view input) override {
     date_from = Date::FromString(ReadToken(input));
     date_to = Date::FromString(ReadToken(input));
-    income = ConvertToInt(input);
+    value = ConvertToInt(input);
   }
 
-  void Process(BudgetManager& manager) const override {
-    const auto date_segment = MakeDateSegment(date_from, date_to);
-    const double daily_income = income * 1.0 / date_segment.length();
-    manager.AddBulkOperation(date_segment, BulkMoneyAdder{daily_income});
-  }
+  void Process(BudgetManager& manager) const = 0;
 
   Date date_from = START_DATE;
   Date date_to = START_DATE;
-  size_t income = 0;
+  size_t value = 0;
+};
+
+struct EarnRequest : MoneyTransactions {
+  EarnRequest() : MoneyTransactions(Type::EARN) {}
+
+  void Process(BudgetManager& manager) const override {
+    const auto date_segment = MakeDateSegment(date_from, date_to);
+    const double daily_income = value * 1.0 / date_segment.length();
+    manager.AddBulkOperation(date_segment, BulkMoneyAdder{ daily_income });
+  }
+};
+
+struct SpendRequest : MoneyTransactions {
+  SpendRequest() : MoneyTransactions(Type::SPEND) {}
+  void Process(BudgetManager& manager) const override {
+    // TODO REDEFINITION OF SPEND MONEY PROCESS
+  }
 };
 
 struct PayTaxRequest : ModifyRequest {
@@ -394,15 +409,19 @@ struct PayTaxRequest : ModifyRequest {
   void ParseFrom(string_view input) override {
     date_from = Date::FromString(ReadToken(input));
     date_to = Date::FromString(input);
+    percent = ConvertToInt(input);
   }
-
+  // TODO ADD ANY PERCENT SUPPORT
   void Process(BudgetManager& manager) const override {
     manager.AddBulkOperation(MakeDateSegment(date_from, date_to), BulkTaxApplier{1});
   }
 
   Date date_from = START_DATE;
   Date date_to = START_DATE;
+  double percent = TAX_PERCENTAGE;
 };
+
+/*!           END MODIFYING          !*/
 
 RequestHolder Request::Create(Request::Type type) {
   switch (type) {
@@ -410,6 +429,8 @@ RequestHolder Request::Create(Request::Type type) {
       return make_unique<ComputeIncomeRequest>();
     case Request::Type::EARN:
       return make_unique<EarnRequest>();
+    case Request::Type::SPEND:
+      return make_unique<SpendRequest>();
     case Request::Type::PAY_TAX:
       return make_unique<PayTaxRequest>();
     default:
