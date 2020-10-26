@@ -62,36 +62,55 @@ public:
 			Earn(from, to, value);
 		}
 		else if (cmd == "PayTax") {
-			PayTax(from, to);
+			double percent; q_stream >> percent;
+			PayTax(from, to, percent);
+		}
+		else if (cmd == "Spend") {
+			double value; q_stream >> value;
+			Spend(from, to, value);
 		}
 		else throw logic_error("Unknown command!");
 	}
 
 	double ComputeIncome(const Date& from, const Date& to) {
-		int int_to = to.GetDate();
+		auto [int_from, int_to] = GetDateRange(from, to);
 		double income = 0;
-		for (int int_from = from.GetDate(); int_from <= int_to; int_from++) {
-			income += incomes[int_from];
+		while (int_from <= int_to) {
+			income += incomes[int_from++].Total();
 		}
 		return income;
 	}
 
-	void Earn(const Date& from, const Date& to, double value) {
-		int int_from = from.GetDate();
-		int int_to = to.GetDate();
+	void Spend(const Date& from, const Date& to, double value) {
+		auto [int_from, int_to] = GetDateRange(from, to);
 		value /= (abs(int_to - int_from) + 1);
-		while (int_from <= int_to) incomes[int_from++] += value;
+		while (int_from <= int_to) incomes[int_from++].spent += value;
 	}
 
-	void PayTax(const Date& from, const Date& to) {
-		int int_to = to.GetDate();
-		for (int int_from = from.GetDate(); int_from <= int_to; int_from++) {
-			incomes[int_from] *= 0.87;
+	void Earn(const Date& from, const Date& to, double value) {
+		auto [int_from, int_to] = GetDateRange(from, to);
+		value /= (abs(int_to - int_from) + 1);
+		while (int_from <= int_to) incomes[int_from++].earned += value;
+	}
+
+	void PayTax(const Date& from, const Date& to, double percent) {
+		auto [int_from, int_to] = GetDateRange(from, to);
+		while (int_from <= int_to) {
+			incomes[int_from++].earned *= (1 - percent / 100);
 		}
 	}
 
+public:
+	struct Money {
+		double Total() const {
+			return earned - spent;
+		}
+		double spent = 0;
+		double earned = 0;
+	};
+
 private:
-	unordered_map<int, double> incomes;
+	unordered_map<int, Money> incomes;
 
 	static Date GetDate(stringstream& stream) {
 		int y, m, d;
@@ -100,17 +119,21 @@ private:
 		stream.ignore(1) >> d;
 		return Date(y, m, d);
 	}
+
+	pair<int, int> GetDateRange(const Date& from, const Date& to) {
+		return { from.GetDate(), to.GetDate() };
+	}
 };
 
 int main() {
 	stringstream ccin(R"(8
 Earn 2000-01-02 2000-01-06 20
 ComputeIncome 2000-01-01 2001-01-01
-PayTax 2000-01-02 2000-01-03
+PayTax 2000-01-02 2000-01-03 13
 ComputeIncome 2000-01-01 2001-01-01
-Earn 2000-01-03 2000-01-03 10
+Spend 2000-12-30 2001-01-02 14
 ComputeIncome 2000-01-01 2001-01-01
-PayTax 2000-01-03 2000-01-03
+PayTax 2000-12-30 2000-12-30 13
 ComputeIncome 2000-01-01 2001-01-01)");
 
 	int Q;
