@@ -94,20 +94,30 @@ bool AreSegmentsIntersected(IndexSegment lhs, IndexSegment rhs) {
   return !(lhs.right <= rhs.left || rhs.right <= lhs.left);
 }
 
-/*!           START MODIFYING          !*/
+
 struct BulkMoneyAdder {
-  double delta = 0.0;
+  double earn = 0.0;
+  double spent = 0.0;
+
+  double Total() const {
+    return earn - spent;
+  }
+
+  BulkMoneyAdder operator + (const BulkMoneyAdder& other) const {
+    return {
+      .earn = earn + other.earn,
+      .spent = spent + other.spent
+    };
+  }
 };
 
 constexpr uint8_t TAX_PERCENTAGE = 13;
 
 struct BulkTaxApplier {
-  static constexpr double FACTOR = 1.0 - TAX_PERCENTAGE / 100.0;
-  uint32_t count = 0;
+  BulkTaxApplier() : tax_percentage(1.0) {}
+  BulkTaxApplier(double percent) : tax_percentage(1.0 - percent / 100.0) {}
 
-  double ComputeFactor() const {
-    return pow(FACTOR, count);
-  }
+  double tax_percentage = 1.0;
 };
 
 class BulkLinearUpdater {
@@ -123,12 +133,14 @@ public:
   {}
 
   void CombineWith(const BulkLinearUpdater& other) {
-    tax_.count += other.tax_.count;
-    add_.delta = add_.delta * other.tax_.ComputeFactor() + other.add_.delta;
+    tax_.tax_percentage *= other.tax_.tax_percentage;
+    add_.earn = add_.earn * other.tax_.tax_percentage + other.add_.earn;
+    add_.spent += other.add_.spent;
   }
 
-  double Collapse(double origin, IndexSegment segment) const {
-    return origin * tax_.ComputeFactor() + add_.delta * segment.length();
+  BulkMoneyAdder Collapse(BulkMoneyAdder origin, IndexSegment segment) const {
+    return { origin.earn * tax_.tax_percentage + add_.earn * segment.length(),
+      origin.spent + add_.spent * segment.length() };
   }
 
 private:
@@ -314,7 +326,7 @@ IndexSegment MakeDateSegment(const Date& date_from, const Date& date_to) {
 }
 
 
-class BudgetManager : public SummingSegmentTree<double, BulkLinearUpdater> {
+class BudgetManager : public SummingSegmentTree<BulkMoneyAdder, BulkLinearUpdater> {
 public:
     BudgetManager() : SummingSegmentTree(DAY_COUNT) {}
 };
@@ -363,9 +375,8 @@ struct ComputeIncomeRequest : ReadRequest<double> {
     date_from = Date::FromString(ReadToken(input));
     date_to = Date::FromString(input);
   }
-  // TODO ADD SPENT MONEY PROCESSING SUPPORT
   double Process(const BudgetManager& manager) const override {
-    return manager.ComputeSum(MakeDateSegment(date_from, date_to));
+    return manager.ComputeSum(MakeDateSegment(date_from, date_to)).Total();
   }
 
   Date date_from = START_DATE;
@@ -393,14 +404,17 @@ struct EarnRequest : MoneyTransactions {
   void Process(BudgetManager& manager) const override {
     const auto date_segment = MakeDateSegment(date_from, date_to);
     const double daily_income = value * 1.0 / date_segment.length();
-    manager.AddBulkOperation(date_segment, BulkMoneyAdder{ daily_income });
+    manager.AddBulkOperation(date_segment, BulkMoneyAdder{ .earn = daily_income, .spent = 0 });
   }
 };
 
 struct SpendRequest : MoneyTransactions {
   SpendRequest() : MoneyTransactions(Type::SPEND) {}
+
   void Process(BudgetManager& manager) const override {
-    // TODO REDEFINITION OF SPEND MONEY PROCESS
+    const auto date_segment = MakeDateSegment(date_from, date_to);
+    const double daily_spent = value * 1.0 / date_segment.length();
+    manager.AddBulkOperation(date_segment, BulkMoneyAdder{ .earn = 0, .spent = daily_spent });
   }
 };
 
@@ -408,20 +422,18 @@ struct PayTaxRequest : ModifyRequest {
   PayTaxRequest() : ModifyRequest(Type::PAY_TAX) {}
   void ParseFrom(string_view input) override {
     date_from = Date::FromString(ReadToken(input));
-    date_to = Date::FromString(input);
+    date_to = Date::FromString(ReadToken(input));
     percent = ConvertToInt(input);
   }
-  // TODO ADD ANY PERCENT SUPPORT
+
   void Process(BudgetManager& manager) const override {
-    manager.AddBulkOperation(MakeDateSegment(date_from, date_to), BulkTaxApplier{1});
+    manager.AddBulkOperation(MakeDateSegment(date_from, date_to), BulkTaxApplier{percent});
   }
 
   Date date_from = START_DATE;
   Date date_to = START_DATE;
-  double percent = TAX_PERCENTAGE;
+  double percent = TAX_PERCENTAGE * 1.0;
 };
-
-/*!           END MODIFYING          !*/
 
 RequestHolder Request::Create(Request::Type type) {
   switch (type) {
@@ -507,6 +519,16 @@ void PrintResponses(const vector<double>& responses, ostream& stream = cout) {
 
 
 int main() {
+  stringstream input(R"(8
+Earn 2000-01-02 2000-01-06 20
+ComputeIncome 2000-01-01 2001-01-01
+PayTax 2000-01-02 2000-01-03 13
+ComputeIncome 2000-01-01 2001-01-01
+Spend 2000-12-30 2001-01-02 14
+ComputeIncome 2000-01-01 2001-01-01
+PayTax 2000-12-30 2000-12-30 13
+ComputeIncome 2000-01-01 2001-01-01)"
+);
   cout.precision(25);
   const auto requests = ReadRequests();
   const auto responses = ProcessRequests(requests);
