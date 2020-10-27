@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="budget_good_base.cpp">
+    <ClCompile Include="budget_bad_base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
