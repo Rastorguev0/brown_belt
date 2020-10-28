@@ -153,40 +153,54 @@ void Add(size_t v, size_t l, size_t r, size_t ql, size_t qr, double value) {
       + (v * 2 + 1 < VERTEX_COUNT ? tree_values[v * 2 + 1] : 0);
 }
 
-void Multiply(size_t v, size_t l, size_t r, size_t ql, size_t qr) {
+// TODO PERCENT PARAMETER
+void Multiply(size_t v, size_t l, size_t r, size_t ql, size_t qr, double percent) {
   if (v >= VERTEX_COUNT || qr <= l || r <= ql) {
     return;
   }
   Push(v, l, r);
   if (ql <= l && r <= qr) {
-    tree_factor[v] *= 0.87;
-    tree_add[v] *= 0.87;
-    tree_values[v] *= 0.87;
+    //TODO ANY % SUPPORT
+    tree_factor[v] *= percent;
+    tree_add[v] *= percent;
+    tree_values[v] *= percent;
     return;
   }
-  Multiply(v * 2, l, (l + r) / 2, ql, qr);
-  Multiply(v * 2 + 1, (l + r) / 2, r, ql, qr);
+  Multiply(v * 2, l, (l + r) / 2, ql, qr, percent);
+  Multiply(v * 2 + 1, (l + r) / 2, r, ql, qr, percent);
   tree_values[v] =
       (v * 2 < VERTEX_COUNT ? tree_values[v * 2] : 0)
       + (v * 2 + 1 < VERTEX_COUNT ? tree_values[v * 2 + 1] : 0);
 }
 
+#define INPUT input
 
 int main() {
+  stringstream input(R"(8
+Earn 2000-01-02 2000-01-06 20
+ComputeIncome 2000-01-01 2001-01-01
+PayTax 2000-01-02 2000-01-03 13
+ComputeIncome 2000-01-01 2001-01-01
+Spend 2000-12-30 2001-01-02 14
+ComputeIncome 2000-01-01 2001-01-01
+PayTax 2000-12-30 2000-12-30 13
+ComputeIncome 2000-01-01 2001-01-01
+)");
+
   cout.precision(25);
   assert(DAY_COUNT <= DAY_COUNT_P2 && DAY_COUNT_P2 < DAY_COUNT * 2);
 
   Init();
 
   int q;
-  cin >> q;
+  INPUT >> q;
 
   for (int i = 0; i < q; ++i) {
     string query_type;
-    cin >> query_type;
+    INPUT >> query_type;
 
     string date_from_str, date_to_str;
-    cin >> date_from_str >> date_to_str;
+    INPUT >> date_from_str >> date_to_str;
 
     auto idx_from = ComputeDayIndex(Date::FromString(date_from_str));
     auto idx_to = ComputeDayIndex(Date::FromString(date_to_str)) + 1;
@@ -194,10 +208,17 @@ int main() {
     if (query_type == "ComputeIncome") {
       cout << ComputeSum(1, 0, DAY_COUNT_P2, idx_from, idx_to) << endl;
     } else if (query_type == "PayTax") {
-      Multiply(1, 0, DAY_COUNT_P2, idx_from, idx_to);
-    } else if (query_type == "Earn") {
       double value;
-      cin >> value;
+      INPUT >> value;
+      Multiply(1, 0, DAY_COUNT_P2, idx_from, idx_to, 1 - value / 100.0);
+    } else if (query_type == "Earn" ) {
+      double value;
+      INPUT >> value;
+      Add(1, 0, DAY_COUNT_P2, idx_from, idx_to, value / (idx_to - idx_from));
+    }
+    else if (query_type == "Spend") {
+      double value;
+      INPUT >> value;
       Add(1, 0, DAY_COUNT_P2, idx_from, idx_to, value / (idx_to - idx_from));
     }
   }
