@@ -172,7 +172,7 @@ void Multiply(size_t v, size_t l, size_t r, size_t ql, size_t qr, double percent
       (v * 2 < VERTEX_COUNT ? tree_values[v * 2] : 0)
       + (v * 2 + 1 < VERTEX_COUNT ? tree_values[v * 2 + 1] : 0);
 }
-
+//
 #define INPUT input
 
 int main() {
