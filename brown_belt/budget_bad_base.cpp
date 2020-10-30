@@ -104,11 +104,13 @@ size_t ComputeDayIndex(const Date& date) {
 }
 
 
-array<double, VERTEX_COUNT> tree_values, tree_add, tree_factor;
+array<double, VERTEX_COUNT> tree_values, tree_add, tree_factor, tree_spent;
 
 void Init() {
+  //TODO ADD NEW FIELD FOR SPENT
   tree_values.fill(0);
   tree_add.fill(0);
+  tree_spent.fill(0);
   tree_factor.fill(1);
 }
 
@@ -117,7 +119,7 @@ void Push(size_t v, size_t l, size_t r) {
     if (w < VERTEX_COUNT) {
       tree_factor[w] *= tree_factor[v];
       (tree_add[w] *= tree_factor[v]) += tree_add[v];
-      (tree_values[w] *= tree_factor[v]) += tree_add[v] * (r - l) / 2;
+      (tree_values[w] *= tree_factor[v]) += (tree_add[v] * (r - l) / 2 + tree_spent[v] * (r - l) / 2);
     }
   }
   tree_factor[v] = 1;
@@ -172,7 +174,7 @@ void Multiply(size_t v, size_t l, size_t r, size_t ql, size_t qr, double percent
       (v * 2 < VERTEX_COUNT ? tree_values[v * 2] : 0)
       + (v * 2 + 1 < VERTEX_COUNT ? tree_values[v * 2 + 1] : 0);
 }
-//
+
 #define INPUT input
 
 int main() {
@@ -219,7 +221,7 @@ ComputeIncome 2000-01-01 2001-01-01
     else if (query_type == "Spend") {
       double value;
       INPUT >> value;
-      Add(1, 0, DAY_COUNT_P2, idx_from, idx_to, value / (idx_to - idx_from));
+      Add(1, 0, DAY_COUNT_P2, idx_from, idx_to, -value / (idx_to - idx_from));
     }
   }
 
