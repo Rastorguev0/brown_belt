@@ -19,10 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="final\input_parsing.h" />
+    <ClInclude Include="final\unit_tests.h" />
     <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="budget_bad_base.cpp" />
+    <ClCompile Include="final\final_main.cpp" />
+    <ClCompile Include="final\input_parcing.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

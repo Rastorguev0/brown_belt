@@ -18,9 +18,18 @@
     <ClInclude Include="test_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="final\unit_tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="final\input_parsing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="budget_bad_base.cpp">
+    <ClCompile Include="final\final_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="final\input_parcing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
