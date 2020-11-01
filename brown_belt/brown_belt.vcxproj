@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="final\guider.h" />
     <ClInclude Include="final\input_parsing.h" />
     <ClInclude Include="final\unit_tests.h" />
     <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp" />
+    <ClCompile Include="final\guider.cpp" />
     <ClCompile Include="final\input_parcing.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -9,15 +9,22 @@ Number ReadNumberOnLine(istream& stream) {
 	return number;
 }
 
-
-QueryType ConvertStrToType(const string& str) {
-	if (str == "Bus") return QueryType::BUS;
-	else if (str == "Stop") return QueryType::STOP;
-	else throw invalid_argument("Unknown query type");
+// ? istream or string_view? string_view I think
+QueryPtr ParseQuery(string_view line) {
+	
+	//else throw invalid_argument("Unknown query command");
 }
 
-vector<Query> ReadQueries(istream& input) {
-	vector<Query> queries;
+vector<QueryPtr> ReadQueries(istream& input) {
+	vector<QueryPtr> queries;
 	int query_count = ReadNumberOnLine<int>(input);
+	queries.reserve(query_count);
+
+	for (int i = 0; i < query_count; i++) {
+		string line;
+		getline(input, line);
+		queries.push_back(ParseQuery(line));
+	}
+
 	return move(queries);
 }

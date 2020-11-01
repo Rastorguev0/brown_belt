@@ -1,10 +1,8 @@
 #pragma once
 #include "test_runner.h"
-
 using namespace std;
 
 void Test1() {
-
 }
 
 void Test2() {

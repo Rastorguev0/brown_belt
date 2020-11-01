@@ -24,12 +24,18 @@
     <ClInclude Include="final\input_parsing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="final\guider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="final\input_parcing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="final\guider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
