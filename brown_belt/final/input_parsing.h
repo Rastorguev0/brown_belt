@@ -119,3 +119,9 @@ QueryPtr ParsePutQuery(string_view line);
 QueryPtr ParseGetQuery(string_view line);
 
 vector<QueryPtr> ReadQueries(istream& input = cin);
+
+StopQuery* StopCast(Query& query);
+
+BusStopsQuery* BusStopsCast(Query& query);
+
+GetBusInfoQuery* BusGetCast(Query& query);

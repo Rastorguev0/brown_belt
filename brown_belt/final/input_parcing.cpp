@@ -114,3 +114,15 @@ vector<QueryPtr> ReadQueries(istream& input) {
 
 	return move(queries);
 }
+
+StopQuery* StopCast(Query& query) {
+	return dynamic_cast<StopQuery*>(&query);
+}
+
+BusStopsQuery* BusStopsCast(Query& query) {
+	return dynamic_cast<BusStopsQuery*>(&query);
+}
+
+GetBusInfoQuery* BusGetCast(Query& query) {
+	return dynamic_cast<GetBusInfoQuery*>(&query);
+}

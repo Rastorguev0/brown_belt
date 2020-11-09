@@ -5,29 +5,29 @@
 using namespace std;
 
 bool StopQueriesEqual(const StopQuery& lhs, Query& rhs) {
-	StopQuery* rhs_casted = dynamic_cast<StopQuery*>(&rhs);
+	StopQuery* rhs_casted = StopCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
 
 bool BusStopsQueryEqual(const BusStopsQuery& lhs, Query& rhs) {
-	BusStopsQuery* rhs_casted = dynamic_cast<BusStopsQuery*>(&rhs);
+	BusStopsQuery* rhs_casted = BusStopsCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
 
 bool GetBusInfoQueryEqual(const GetBusInfoQuery& lhs, Query& rhs) {
-	GetBusInfoQuery* rhs_casted = dynamic_cast<GetBusInfoQuery*>(&rhs);
+	GetBusInfoQuery* rhs_casted = BusGetCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
 
 bool IsQueriesEqual(QueryPtr lhs, QueryPtr rhs) {
-	if (dynamic_cast<StopQuery*>(lhs.get())) {
-		return (*dynamic_cast<StopQuery*>(lhs.get()) == *dynamic_cast<StopQuery*>(rhs.get()));
+	if (lhs->type == QueryType::STOP && rhs->type == QueryType::STOP) {
+		return *StopCast(*lhs) == *StopCast(*lhs);
 	}
-	else if (dynamic_cast<BusStopsQuery*>(lhs.get())) {
-		return (*dynamic_cast<BusStopsQuery*>(lhs.get()) == *dynamic_cast<BusStopsQuery*>(rhs.get()));
+	else if (lhs->type == QueryType::BUS_STOPS && rhs->type == QueryType::BUS_STOPS) {
+		return *BusStopsCast(*lhs) == *BusStopsCast(*rhs);
 	}
-	else if (dynamic_cast<GetBusInfoQuery*>(lhs.get())) {
-		return (*dynamic_cast<GetBusInfoQuery*>(lhs.get()) == *dynamic_cast<GetBusInfoQuery*>(rhs.get()));
+	else if (lhs->type == QueryType::GET_BUS_INFO && rhs->type == QueryType::GET_BUS_INFO) {
+		return *BusGetCast(*lhs) == *BusGetCast(*rhs);
 	}
 	else throw invalid_argument("Can not cast queries");
 }
