@@ -6,16 +6,24 @@
 #include <string>
 using namespace std;
 
+double Length(const Coordinates& from, const Coordinates& to);
+
 struct StopInfo {
+	StopInfo() = default;
 	StopInfo(Coordinates c) : coords(c) {}
+	bool operator== (const StopInfo& other) const = default;
 	Coordinates coords;
 };
 
+ostream& operator<<(ostream& os, const StopInfo& si);
+
 struct BusInfo {
+	BusInfo() = default;
 	BusInfo(vector<string> stops_, bool circled)
 		: stops(move(stops_)), is_circled(circled) {}
 	vector<string> stops;
 	bool is_circled;
+	bool operator== (const BusInfo& other) const = default;
 };
 
 struct GetBusInfo {
@@ -30,6 +38,8 @@ struct GetBusInfo {
 	double length;
 };
 
+ostream& operator<<(ostream& os, const BusInfo& bi);
+
 class TransportGuider {
 public:
 	TransportGuider() = default;
@@ -38,10 +48,12 @@ public:
 	void ProcessBusStopsQuery(BusStopsQuery& query);
 	vector<GetBusInfo> ProcessGetBusInfoQuery(GetBusInfoQuery& query);
 	void BusInfoOutput(const vector<GetBusInfo> buses_info, ostream& stream = cout);
+
+	const unordered_map<string, StopInfo>& CheckStops() const;
+	const unordered_map<string, BusInfo>& CheckBuses() const;
 protected:
 	size_t UniqueStopsCount(vector<string>& stops) const;
 	double GetLength(vector<string>& stops) const;
-	double Length(Coordinates from, Coordinates to) const;
 protected:
 	unordered_map<string, StopInfo> stops_info;
 	unordered_map<string, BusInfo> buses_info;

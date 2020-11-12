@@ -1,5 +1,9 @@
 #include "input_parsing.h"
 
+ostream& operator<<(ostream& os, const Coordinates& c) {
+	return os << c.latitude << " " << c.longitude;
+}
+
 StopQuery::StopQuery(string_view line) {
 	type = QueryType::STOP;
 

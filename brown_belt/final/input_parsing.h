@@ -10,7 +10,7 @@
 #include <tuple>
 using namespace std;
 
-const vector<char> DELIMETERS = {'-', '>'};
+const vector<char> DELIMETERS = { '-', '>' };
 
 enum class QueryType {
 	BUS_STOPS,
@@ -20,18 +20,27 @@ enum class QueryType {
 
 struct Query {
 	Query() = default;
-	virtual ostream& operator<<(ostream& stream) const = 0;
 	QueryType type;
 };
 
 struct Coordinates {
 	double latitude = 0.0;
 	double longitude = 0.0;
+
+	double LatRad() const {
+		return latitude * 3.1415926535 / 180;
+	}
+	double LongRad() const {
+		return longitude * 3.1415926535 / 180;
+	}
+
 	bool operator==(const Coordinates& other) const {
 		return make_tuple(latitude, longitude)
 			== make_tuple(other.latitude, other.longitude);
 	}
 };
+
+ostream& operator<<(ostream& os, const Coordinates& c);
 
 struct StopQuery : Query {
 	StopQuery(string_view line);
@@ -44,10 +53,6 @@ struct StopQuery : Query {
 	bool operator==(const StopQuery& other) const {
 		return make_tuple(stop_name, coords)
 			== make_tuple(other.stop_name, other.coords);
-	}
-
-	ostream& operator<<(ostream& stream) const {
-		return stream << "Stop " << stop_name << ": " << coords.latitude << ' ' << coords.longitude << endl;
 	}
 
 	string stop_name;
@@ -67,17 +72,6 @@ struct BusStopsQuery : Query {
 			== make_tuple(other.bus_id, other.stops, other.is_circled);
 	}
 
-	ostream& operator<<(ostream& stream) const {
-		stream << "Bus " << bus_id << ": ";
-		for (const auto& stop : stops) {
-			if (stop != *stops.begin()) {
-				stream << ' ' << (is_circled ? '>' : '-') << ' ' << stop;
-			}
-			else stream << stop;
-		}
-		return stream << endl;
-	}
-
 	string bus_id;
 	vector<string> stops;
 	bool is_circled;
@@ -92,10 +86,6 @@ struct GetBusInfoQuery : Query {
 
 	bool operator==(const GetBusInfoQuery& other) const {
 		return bus_id == other.bus_id;
-	}
-
-	ostream& operator<<(ostream& stream) const {
-		return stream << "Bus " << bus_id << endl;
 	}
 
 	string bus_id;
