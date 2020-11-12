@@ -149,16 +149,35 @@ void TestProcessBusStopsQuery() {
 	TransportGuider guider;
 	BusStopsQuery q1("bus 1", vector<string>{"s1", "s 2", "s3"}, false);
 	BusStopsQuery q2("bus 2", vector<string>{"s1", "s 2", "s4", "s1"}, true);
+	guider.ProcessBusStopsQuery(q1);
+	guider.ProcessBusStopsQuery(q2);
 	ASSERT_EQUAL(guider.CheckBuses().size(), 2);
 	ASSERT(guider.CheckBuses().count("bus 1"));
 	ASSERT(guider.CheckBuses().count("bus 2"));
 	ASSERT_EQUAL(guider.CheckBuses().at("bus 1"), BusInfo({ vector<string>{"s1", "s 2", "s3"}, false }));
-	ASSERT_EQUAL(guider.CheckBuses().at("bus 1"), BusInfo({ vector<string>{"s1", "s 2", "s4", "s1"}, true }));
+	ASSERT_EQUAL(guider.CheckBuses().at("bus 2"), BusInfo({ vector<string>{"s1", "s 2", "s4", "s1"}, true }));
 }
 
 void TestProcessGetBusInfoQuery() {
 	TransportGuider guider;
 
+	StopQuery sq("stop1", 0, 0);
+	StopQuery sq2("stop2", 0, 1);
+	guider.ProcessStopQuery(sq);
+	guider.ProcessStopQuery(sq2);
+
+	BusStopsQuery q1("bus 1", vector<string>{"stop1"}, false);
+	BusStopsQuery q2("bus 2", vector<string>{"stop1", "stop2", "stop1"}, true);
+	guider.ProcessBusStopsQuery(q1);
+	guider.ProcessBusStopsQuery(q2);
+
+	auto gbiq1 = GetBusInfoQuery(string("bus 1"));
+	auto gbiq2 = GetBusInfoQuery(string("bus 2"));
+	GetBusInfo gbi1 = guider.ProcessGetBusInfoQuery(gbiq1);
+	GetBusInfo gbi2 = guider.ProcessGetBusInfoQuery(gbiq2);
+
+	ASSERT_EQUAL(gbi1, GetBusInfo("bus 1", 1, 1, 0, 0));
+	ASSERT_EQUAL(gbi2, GetBusInfo("bus 2", 3, 2, 2 * Length(sq.coords, sq2.coords), 0));
 }
 
 void MainTest() {
@@ -184,7 +203,8 @@ void MainTest() {
 	guider.ProcessQueries(move(queries), out);
 	string expected = R"(Bus 256: 6 stops on route, 5 unique stops, 4371.02 route length
 Bus 750: 5 stops on route, 3 unique stops, 20939.5 route length
-Bus 751: not found)";
+Bus 751: not found
+)";
 	ASSERT_EQUAL(out.str(), expected);
 }
 

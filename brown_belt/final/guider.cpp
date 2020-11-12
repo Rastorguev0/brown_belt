@@ -16,6 +16,17 @@ ostream& operator<<(ostream& os, const StopInfo& si) {
 	return os << si.coords;
 }
 
+ostream& operator<< (ostream& os, const GetBusInfo& info) {
+	os << "Bus " << info.bus_id << ": ";
+	if (info.all_stops_count == 0) os << "not found" << endl;
+	else {
+		os << info.all_stops_count << " stops on route, "
+			<< info.unique_stops_count << " unique stops, "
+			<< info.length << " route length" << endl;
+	}
+	return os;
+}
+
 double Length(const Coordinates& lhs, const Coordinates& rhs) {
 	return R * acos(
 		sin(lhs.LatRad()) * sin(rhs.LatRad()) +
@@ -25,6 +36,7 @@ double Length(const Coordinates& lhs, const Coordinates& rhs) {
 }
 
 void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) {
+	vector<GetBusInfo> info;
 	for (const auto& query : queries) {
 		switch (query->type) {
 		case QueryType::STOP:
@@ -34,11 +46,11 @@ void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) 
 			ProcessBusStopsQuery(*BusStopsCast(*query));
 			break;
 		case QueryType::GET_BUS_INFO:
-			vector<GetBusInfo> info = ProcessGetBusInfoQuery(*BusGetCast(*query));
-			BusInfoOutput(move(info), stream);
+			info.push_back(ProcessGetBusInfoQuery(*BusGetCast(*query)));
 			break;
 		}
 	}
+	BusInfoOutput(move(info), stream);
 }
 
 void TransportGuider::ProcessStopQuery(StopQuery& query) {
@@ -49,30 +61,30 @@ void TransportGuider::ProcessBusStopsQuery(BusStopsQuery& query) {
 	buses_info[query.bus_id] = BusInfo(move(query.stops), query.is_circled);
 }
 
-vector<GetBusInfo> TransportGuider::ProcessGetBusInfoQuery(GetBusInfoQuery& query) {
-	vector<GetBusInfo> result;
+GetBusInfo TransportGuider::ProcessGetBusInfoQuery(GetBusInfoQuery& query) const {
 	if (buses_info.count(query.bus_id)) {
-		BusInfo& bus_info = buses_info[query.bus_id];
 		GetBusInfo info;
+		const BusInfo& bus_info = buses_info.at(query.bus_id);
 		info.bus_id = move(query.bus_id);
-		info.all_stops_count = bus_info.stops.size();
-		info.length = GetLength(bus_info.stops);
+		info.is_circled = buses_info.at(info.bus_id).is_circled;
+		info.all_stops_count = info.is_circled ? bus_info.stops.size()
+			: 2 * bus_info.stops.size() - 1;
 		info.unique_stops_count = UniqueStopsCount(bus_info.stops);
-		result.push_back(move(info));
+		info.length = info.is_circled ? GetLength(bus_info.stops) : 2 * GetLength(bus_info.stops);
+		return info;
 	}
 	else {
-		result.push_back(GetBusInfo(move(query.bus_id), 0, 0, 0));
+		return GetBusInfo(move(query.bus_id), 0, 0, 0, 0);
 	}
-	return move(result);
 }
 
-size_t TransportGuider::UniqueStopsCount(vector<string>& stops) const {
+size_t TransportGuider::UniqueStopsCount(const vector<string>& stops) const {
 	unordered_set<string> u_stops;
 	for (const auto& stop : stops) u_stops.insert(stop);
 	return u_stops.size();
 }
 
-double TransportGuider::GetLength(vector<string>& stops) const {
+double TransportGuider::GetLength(const vector<string>& stops) const {
 	double length = 0;
 	if (stops.size() >= 2) {
 		for (size_t i = 0; i < stops.size() - 1; ++i) {
@@ -82,15 +94,9 @@ double TransportGuider::GetLength(vector<string>& stops) const {
 	return length;
 }
 
-void TransportGuider::BusInfoOutput(const vector<GetBusInfo> buses_info, ostream& stream) {
+void TransportGuider::BusInfoOutput(const vector<GetBusInfo> buses_info, ostream& stream) const {
 	for (const auto& info : buses_info) {
-		stream << "Bus " << info.bus_id << ": ";
-		if (info.all_stops_count == 0) stream << "not found" << endl;
-		else {
-			stream << info.all_stops_count << " stops on route, "
-				<< info.unique_stops_count << " uique stops, "
-				<< info.length << " route length" << endl;
-		}
+		stream << info;
 	}
 }
 

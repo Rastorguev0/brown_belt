@@ -1,5 +1,17 @@
 #include "input_parsing.h"
 
+double Coordinates::LatRad() const {
+	return latitude * 3.1415926535 / 180;
+}
+double Coordinates::LongRad() const {
+	return longitude * 3.1415926535 / 180;
+}
+
+bool Coordinates::operator==(const Coordinates& other) const {
+	return make_tuple(latitude, longitude)
+		== make_tuple(other.latitude, other.longitude);
+}
+
 ostream& operator<<(ostream& os, const Coordinates& c) {
 	return os << c.latitude << " " << c.longitude;
 }

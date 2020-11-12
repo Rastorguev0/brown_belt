@@ -21,23 +21,17 @@ enum class QueryType {
 struct Query {
 	Query() = default;
 	QueryType type;
+	virtual QueryType Type() const { return type; }
 };
 
 struct Coordinates {
 	double latitude = 0.0;
 	double longitude = 0.0;
 
-	double LatRad() const {
-		return latitude * 3.1415926535 / 180;
-	}
-	double LongRad() const {
-		return longitude * 3.1415926535 / 180;
-	}
+	double LatRad() const;
+	double LongRad() const;
 
-	bool operator==(const Coordinates& other) const {
-		return make_tuple(latitude, longitude)
-			== make_tuple(other.latitude, other.longitude);
-	}
+	bool operator==(const Coordinates& other) const;
 };
 
 ostream& operator<<(ostream& os, const Coordinates& c);
