@@ -26,6 +26,11 @@ StopQuery::StopQuery(string_view line) {
 	};
 }
 
+GetStopInfoQuery::GetStopInfoQuery(string_view line) {
+	type = QueryType::GET_STOP_INFO;
+	stop_name = string(line);
+}
+
 BusStopsQuery::BusStopsQuery(string_view line) {
 	type = QueryType::BUS_STOPS;
 
@@ -58,7 +63,7 @@ string GetSeparatedToken(string_view& line, const char delimeter) {
 	if (del_pos == string_view::npos) {
 		string token = string(line);
 		line.remove_prefix(line.size());
-		return move(token);
+		return token;
 	}
 	else {
 		string token = string(line.substr(0, del_pos));
@@ -94,18 +99,16 @@ double ConvertToDouble(string_view line) {
 
 QueryPtr ParsePutQuery(string_view line) {
 	string command = GetSeparatedToken(line);
-	if (command == "Stop") {
-		return make_unique<StopQuery>(line);
-	}
-	else if (command == "Bus") {
-		return make_unique<BusStopsQuery>(line);
-	}
+	if (command == "Stop") return make_unique<StopQuery>(line);
+	else if (command == "Bus") return make_unique<BusStopsQuery>(line);
 	else throw invalid_argument("Unknown query command");
 }
 
 QueryPtr ParseGetQuery(string_view line) {
-	GetSeparatedToken(line);
-	return make_unique<GetBusInfoQuery>(line);
+	string cmd = GetSeparatedToken(line);
+	if (cmd == "Bus") return make_unique<GetBusInfoQuery>(line);
+	else if (cmd == "Stop") return make_unique<GetStopInfoQuery>(line);
+	else throw invalid_argument("Unknown query command");
 }
 
 vector<QueryPtr> ReadQueries(istream& input) {
@@ -128,11 +131,15 @@ vector<QueryPtr> ReadQueries(istream& input) {
 		queries.push_back(ParseGetQuery(line));
 	}
 
-	return move(queries);
+	return queries;
 }
 
 StopQuery* StopCast(Query& query) {
 	return dynamic_cast<StopQuery*>(&query);
+}
+
+GetStopInfoQuery* StopGetCast(Query& query) {
+	return dynamic_cast<GetStopInfoQuery*>(&query);
 }
 
 BusStopsQuery* BusStopsCast(Query& query) {

@@ -9,12 +9,17 @@ bool StopQueriesEqual(const StopQuery& lhs, Query& rhs) {
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
 
-bool BusStopsQueryEqual(const BusStopsQuery& lhs, Query& rhs) {
+bool GetStopInfoQueriesEqual(const GetStopInfoQuery& lhs, Query& rhs) {
+	GetStopInfoQuery* rhs_casted = StopGetCast(rhs);
+	return rhs_casted ? *rhs_casted == lhs : false;
+}
+
+bool BusStopsQueriesEqual(const BusStopsQuery& lhs, Query& rhs) {
 	BusStopsQuery* rhs_casted = BusStopsCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
 
-bool GetBusInfoQueryEqual(const GetBusInfoQuery& lhs, Query& rhs) {
+bool GetBusInfoQueriesEqual(const GetBusInfoQuery& lhs, Query& rhs) {
 	GetBusInfoQuery* rhs_casted = BusGetCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
 }
@@ -22,6 +27,9 @@ bool GetBusInfoQueryEqual(const GetBusInfoQuery& lhs, Query& rhs) {
 bool IsQueriesEqual(QueryPtr lhs, QueryPtr rhs) {
 	if (lhs->type == QueryType::STOP && rhs->type == QueryType::STOP) {
 		return *StopCast(*lhs) == *StopCast(*lhs);
+	}
+	else if (lhs->type == QueryType::GET_STOP_INFO && rhs->type == QueryType::GET_STOP_INFO) {
+		return *StopGetCast(*lhs) == *StopGetCast(*rhs);
 	}
 	else if (lhs->type == QueryType::BUS_STOPS && rhs->type == QueryType::BUS_STOPS) {
 		return *BusStopsCast(*lhs) == *BusStopsCast(*rhs);
@@ -83,12 +91,16 @@ void TestParsing() {
 		ASSERT(StopQueriesEqual(StopQuery("1251 x", 25, 5), *ParsePutQuery(query)));
 	}
 	{
+		string query = "Stop 1121M";
+		ASSERT(GetStopInfoQueriesEqual(GetStopInfoQuery(string("1121M")), *ParseGetQuery(query)));
+	}
+	{
 		string query = "Bus 1251 x: stop1 - stop 2";
-		ASSERT(BusStopsQueryEqual(BusStopsQuery("1251 x", { "stop1", "stop 2" }, false), *ParsePutQuery(query)));
+		ASSERT(BusStopsQueriesEqual(BusStopsQuery("1251 x", { "stop1", "stop 2" }, false), *ParsePutQuery(query)));
 	}
 	{
 		string query = "Bus 1251 x";
-		ASSERT(GetBusInfoQueryEqual(GetBusInfoQuery(string("1251 x")), *ParseGetQuery(query)));
+		ASSERT(GetBusInfoQueriesEqual(GetBusInfoQuery(string("1251 x")), *ParseGetQuery(query)));
 	}
 }
 
@@ -104,10 +116,12 @@ void TestReadQuerries() {
 		Stop Universam : 55.587655, 37.645687
 		Stop Biryulyovo Tovarnaya : 55.592028, 37.653656
 		Stop Biryulyovo Passazhirskaya : 55.580999, 37.659164
-		3
+		5
 		Bus 256
 		Bus 750
-		Bus 751)");
+		Stop Rasskazovka
+		Bus 751
+		Stop Samara)");
 	vector<QueryPtr> queries = ReadQueries(input);
 
 	vector<QueryPtr> expected;
@@ -125,7 +139,9 @@ void TestReadQuerries() {
 	expected.push_back(make_unique<StopQuery>("Biryulyovo Passazhirskaya", 55.580999, 37.659164));
 	expected.push_back(make_unique<GetBusInfoQuery>(string("256")));
 	expected.push_back(make_unique<GetBusInfoQuery>(string("750")));
+	expected.push_back(make_unique<GetStopInfoQuery>(string("Rasskazovka")));
 	expected.push_back(make_unique<GetBusInfoQuery>(string("751")));
+	expected.push_back(make_unique<GetStopInfoQuery>(string("Samara")));
 
 	for (size_t i = 0; i < queries.size(); i++) {
 		ASSERT(IsQueriesEqual(move(queries[i]), move(expected[i])));
@@ -141,8 +157,33 @@ void TestProcessStopQuery() {
 	ASSERT_EQUAL(guider.CheckStops().size(), 2);
 	ASSERT(guider.CheckStops().count("stop1"));
 	ASSERT(guider.CheckStops().count("stop2"));
-	ASSERT_EQUAL(guider.CheckStops().at("stop1"), StopInfo({ 0, 0 }));
-	ASSERT_EQUAL(guider.CheckStops().at("stop2"), StopInfo({ 0, 1 }));
+	ASSERT_EQUAL(guider.CheckStops().at("stop1"), StopInfo({ 0, 0 }, {}));
+	ASSERT_EQUAL(guider.CheckStops().at("stop2"), StopInfo({ 0, 1 }, {}));
+}
+
+void TestProcessGetStopInfoQuery() {
+	TransportGuider guider;
+
+	vector<QueryPtr> queries;
+	queries.push_back(make_unique<StopQuery>("stopA", 0, 0));
+	queries.push_back(make_unique<BusStopsQuery>("bus1", vector<string>{"stopA", "stopB", "stopC"}, false));
+	queries.push_back(make_unique<BusStopsQuery>("bus2", vector<string>{"stopD", "stopB", "stopC"}, false));
+	queries.push_back(make_unique<StopQuery>("stopG", 0, 0));
+	queries.push_back(make_unique<StopQuery>("stopB", 0, 0));
+	queries.push_back(make_unique<StopQuery>("stopC", 0, 0));
+	queries.push_back(make_unique<StopQuery>("stopD", 0, 0));
+
+	guider.ProcessQueries(move(queries));
+
+	GetStopInfoQuery gsiq1(string("stopG"));
+	GetStopInfoQuery gsiq2(string("stopF"));
+	GetStopInfoQuery gsiq3(string("stopA"));
+	GetStopInfoQuery gsiq4(string("stopB"));
+
+	ASSERT_EQUAL(guider.ProcessGetStopInfoQuery(gsiq1), GetStopInfo("stopG", vector<string>{}, true));
+	ASSERT_EQUAL(guider.ProcessGetStopInfoQuery(gsiq2), GetStopInfo("stopF", vector<string>{}, false));
+	ASSERT_EQUAL(guider.ProcessGetStopInfoQuery(gsiq3), GetStopInfo("stopA", vector<string>{"bus1"}, true));
+	ASSERT_EQUAL(guider.ProcessGetStopInfoQuery(gsiq4), GetStopInfo("stopB", vector<string>{"bus1", "bus2"}, true));
 }
 
 void TestProcessBusStopsQuery() {
@@ -208,6 +249,44 @@ Bus 751: not found
 	ASSERT_EQUAL(out.str(), expected);
 }
 
+void MainTestV2() {
+	stringstream out("");
+	TransportGuider guider;
+
+	vector<QueryPtr> queries;
+	queries.push_back(make_unique<StopQuery>("Tolstopaltsevo", 55.611087, 37.20829));
+	queries.push_back(make_unique<StopQuery>("Marushkino", 55.595884, 37.209755));
+	queries.push_back(make_unique<BusStopsQuery>("256", vector<string>{"Biryulyovo Zapadnoye", "Biryusinka",
+		"Universam", "Biryulyovo Tovarnaya", "Biryulyovo Passazhirskaya", "Biryulyovo Zapadnoye"}, true));
+	queries.push_back(make_unique<BusStopsQuery>("750", vector<string>{"Tolstopaltsevo", "Marushkino", "Rasskazovka"}, false));
+	queries.push_back(make_unique<StopQuery>("Rasskazovka", 55.632761, 37.333324));
+	queries.push_back(make_unique<StopQuery>("Biryulyovo Zapadnoye", 55.574371, 37.6517));
+	queries.push_back(make_unique<StopQuery>("Biryusinka", 55.581065, 37.64839));
+	queries.push_back(make_unique<StopQuery>("Universam", 55.587655, 37.645687));
+	queries.push_back(make_unique<StopQuery>("Biryulyovo Tovarnaya", 55.592028, 37.653656));
+	queries.push_back(make_unique<StopQuery>("Biryulyovo Passazhirskaya", 55.580999, 37.659164));
+	queries.push_back(make_unique<BusStopsQuery>("828", vector<string>{"Biryulyovo Zapadnoye", "Universam",
+	"Rossoshanskaya ulitsa", "Biryulyovo Zapadnoye"}, true));
+	queries.push_back(make_unique<StopQuery>("Rossoshanskaya ulitsa", 55.595579, 37.605757));
+	queries.push_back(make_unique<StopQuery>("Prazhskaya", 55.611678, 37.603831));
+	queries.push_back(make_unique<GetBusInfoQuery>(string("256")));
+	queries.push_back(make_unique<GetBusInfoQuery>(string("750")));
+	queries.push_back(make_unique<GetBusInfoQuery>(string("751")));
+	queries.push_back(make_unique<GetStopInfoQuery>(string("Samara")));
+	queries.push_back(make_unique<GetStopInfoQuery>(string("Prazhskaya")));
+	queries.push_back(make_unique<GetStopInfoQuery>(string("Biryulyovo Zapadnoye")));
+
+	guider.ProcessQueries(move(queries), out);
+	string expected = R"(Bus 256: 6 stops on route, 5 unique stops, 4371.02 route length
+Bus 750: 5 stops on route, 3 unique stops, 20939.5 route length
+Bus 751: not found
+Stop Samara: not found
+Stop Prazhskaya: no buses
+Stop Biryulyovo Zapadnoye: buses 256 828
+)";
+	ASSERT_EQUAL(out.str(), expected);
+}
+
 void TestAll() {
 	TestRunner tr;
 	RUN_TEST(tr, TestCheckDelimiterType);
@@ -216,7 +295,9 @@ void TestAll() {
 	RUN_TEST(tr, TestParsing);
 	RUN_TEST(tr, TestReadQuerries);
 	RUN_TEST(tr, TestProcessStopQuery);
+	RUN_TEST(tr, TestProcessGetStopInfoQuery);
 	RUN_TEST(tr, TestProcessBusStopsQuery);
 	RUN_TEST(tr, TestProcessGetBusInfoQuery);
 	RUN_TEST(tr, MainTest);
+	RUN_TEST(tr, MainTestV2);
 }

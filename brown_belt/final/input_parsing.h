@@ -15,6 +15,7 @@ const vector<char> DELIMETERS = { '-', '>' };
 enum class QueryType {
 	BUS_STOPS,
 	STOP,
+	GET_STOP_INFO,
 	GET_BUS_INFO,
 };
 
@@ -51,6 +52,18 @@ struct StopQuery : Query {
 
 	string stop_name;
 	Coordinates coords;
+};
+
+struct GetStopInfoQuery : Query {
+	GetStopInfoQuery(string_view line);
+	GetStopInfoQuery(string name) : stop_name(move(name)) {
+		type = QueryType::GET_STOP_INFO;
+	}
+
+	bool operator== (const GetStopInfoQuery& other) {
+		return stop_name == other.stop_name;
+	}
+	string stop_name;
 };
 
 struct BusStopsQuery : Query {
@@ -105,6 +118,8 @@ QueryPtr ParseGetQuery(string_view line);
 vector<QueryPtr> ReadQueries(istream& input = cin);
 
 StopQuery* StopCast(Query& query);
+
+GetStopInfoQuery* StopGetCast(Query& query);
 
 BusStopsQuery* BusStopsCast(Query& query);
 
