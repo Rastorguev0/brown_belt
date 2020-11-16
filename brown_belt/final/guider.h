@@ -87,7 +87,7 @@ public:
 	void ProcessBusStopsQuery(BusStopsQuery& query);
 	GetBusInfo ProcessGetBusInfoQuery(GetBusInfoQuery& query) const;
 	template<typename Info>
-	void InfoOutput(const vector<Info>& info, ostream& stream = cout) const;
+	void InfoOutput(const Info& info, ostream& stream = cout) const;
 
 	const unordered_map<string, StopInfo>& CheckStops() const;
 	const unordered_map<string, BusInfo>& CheckBuses() const;

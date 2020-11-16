@@ -52,26 +52,22 @@ double Length(const Coordinates& lhs, const Coordinates& rhs) {
 }
 
 void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) {
-	vector<GetBusInfo> bus_info;
-	vector<GetStopInfo> stop_info;
 	for (const auto& query : queries) {
 		switch (query->type) {
 		case QueryType::STOP:
 			ProcessStopQuery(*StopCast(*query));
 			break;
 		case QueryType::GET_STOP_INFO:
-			stop_info.push_back(ProcessGetStopInfoQuery(*StopGetCast(*query)));
+			InfoOutput(ProcessGetStopInfoQuery(*StopGetCast(*query)), stream);
 			break;
 		case QueryType::BUS_STOPS:
 			ProcessBusStopsQuery(*BusStopsCast(*query));
 			break;
 		case QueryType::GET_BUS_INFO:
-			bus_info.push_back(ProcessGetBusInfoQuery(*BusGetCast(*query)));
+			InfoOutput(ProcessGetBusInfoQuery(*BusGetCast(*query)), stream);
 			break;
 		}
 	}
-	InfoOutput(move(bus_info), stream);
-	InfoOutput(move(stop_info), stream);
 }
 
 void TransportGuider::ProcessStopQuery(StopQuery& query) {
@@ -128,10 +124,8 @@ double TransportGuider::GetLength(const vector<string>& stops) const {
 	return length;
 }
 template<typename Info>
-void TransportGuider::InfoOutput(const vector<Info>& info, ostream& stream) const {
-	for (const auto& info_ : info) {
-		stream << info_;
-	}
+void TransportGuider::InfoOutput(const Info& info, ostream& stream) const {
+	stream << info;
 }
 
 const unordered_map<string, StopInfo>& TransportGuider::CheckStops() const {
