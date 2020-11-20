@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <set>
 using namespace std;
@@ -11,10 +12,12 @@ double Length(const Coordinates& from, const Coordinates& to);
 
 struct StopInfo {
 	StopInfo() = default;
-	StopInfo(Coordinates c, set<string> buses_) : coords(c) , buses(move(buses_)) {}
+	StopInfo(Coordinates c, set<string> buses_, Distances dist)
+		: coords(c) , buses(move(buses_)), distances(move(dist)) {}
 
 	Coordinates coords;
 	set<string> buses;
+	Distances distances;
 
 	bool operator== (const StopInfo& other) const {
 		return coords == other.coords && buses == other.buses;
@@ -59,19 +62,20 @@ ostream& operator<<(ostream& os, const BusInfo& bi);
 struct GetBusInfo {
 	//bus not found = all_stops_count == 0
 	GetBusInfo() = default;
-	GetBusInfo(string id, size_t stops, size_t u_stops, double l, bool circled)
+	GetBusInfo(string id, size_t stops, size_t u_stops, double l, double rl, bool circled)
 		: bus_id(move(id)), all_stops_count(stops),
-		unique_stops_count(u_stops), length(l), is_circled(circled) {}
+		unique_stops_count(u_stops), length(l), real_length(rl), is_circled(circled) {}
 
 	string bus_id;
 	size_t all_stops_count = 0;
 	size_t unique_stops_count = 0;
 	double length = 0;
+	double real_length = 0;
 	bool is_circled = 0;
 
 	bool operator== (const GetBusInfo& other) const {
-		return make_tuple(bus_id, all_stops_count, unique_stops_count, length)
-			== make_tuple(other.bus_id, other.all_stops_count, other.unique_stops_count, other.length);
+		return make_tuple(bus_id, all_stops_count, unique_stops_count, length, real_length) ==
+			make_tuple(other.bus_id, other.all_stops_count, other.unique_stops_count, other.length, other.real_length);
 	}
 };
 
@@ -94,6 +98,8 @@ public:
 protected:
 	size_t UniqueStopsCount(const vector<string>& stops) const;
 	double GetLength(const vector<string>& stops) const;
+	double GetRealLength(const vector<string>& stops, bool is_circled) const;
+	double RealLength(const string& from, const string& to) const;
 protected:
 	unordered_map<string, StopInfo> stops_info;
 	unordered_map<string, BusInfo> buses_info;

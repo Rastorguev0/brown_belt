@@ -8,6 +8,7 @@
 #include <memory>
 #include <algorithm>
 #include <tuple>
+#include <unordered_map>
 using namespace std;
 
 const vector<char> DELIMETERS = { '-', '>' };
@@ -37,20 +38,23 @@ struct Coordinates {
 
 ostream& operator<<(ostream& os, const Coordinates& c);
 
+using Distances = unordered_map<string, unsigned>;
 struct StopQuery : Query {
 	StopQuery(string_view line);
 
-	StopQuery(string stop, double lat_, double long_)
-		: stop_name(move(stop)), coords({ lat_, long_ }) {
+	StopQuery(string stop, double lat_, double long_, unordered_map<string, unsigned> dist)
+		: stop_name(move(stop)), coords({ lat_, long_ }), distances(move(dist)) {
 		type = QueryType::STOP;
 	}
 
 	bool operator==(const StopQuery& other) const {
-		return make_tuple(stop_name, coords)
-			== make_tuple(other.stop_name, other.coords);
+		return make_tuple(stop_name, coords, distances)
+			== make_tuple(other.stop_name, other.coords, other.distances);
 	}
 
+
 	string stop_name;
+	Distances distances;
 	Coordinates coords;
 };
 
@@ -102,6 +106,8 @@ template <typename Number>
 Number ReadNumberOnLine(istream& stream);
 
 double ConvertToDouble(string_view line);
+
+unsigned ConvertFromMeters(string_view line);
 
 using QueryPtr = unique_ptr<Query>;
 

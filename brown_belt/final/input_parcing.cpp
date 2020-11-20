@@ -22,8 +22,15 @@ StopQuery::StopQuery(string_view line) {
 	stop_name = GetSeparatedToken(line, ':');
 	coords = {
 		ConvertToDouble(GetSeparatedToken(line, ',')),
-		ConvertToDouble(GetSeparatedToken(line))
+		ConvertToDouble(GetSeparatedToken(line, ',')),
 	};
+	while (!line.empty()) {
+		unsigned dist = ConvertFromMeters(GetSeparatedToken(line));
+		//"to"
+		GetSeparatedToken(line);
+		string stop = GetSeparatedToken(line, ',');
+		if (stop != "") distances[stop] = dist;
+	}
 }
 
 GetStopInfoQuery::GetStopInfoQuery(string_view line) {
@@ -93,6 +100,14 @@ double ConvertToDouble(string_view line) {
 	string doublya = string(line);
 	istringstream converter(move(doublya));
 	double result;
+	converter >> result;
+	return result;
+}
+
+unsigned ConvertFromMeters(string_view line) {
+	string uns = string(line.substr(0, line.size() - 1));
+	istringstream converter(move(uns));
+	unsigned result;
 	converter >> result;
 	return result;
 }

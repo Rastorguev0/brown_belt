@@ -36,9 +36,11 @@ ostream& operator<< (ostream& os, const GetBusInfo& info) {
 	os << "Bus " << info.bus_id << ": ";
 	if (info.all_stops_count == 0) os << "not found" << endl;
 	else {
+		double curv = info.real_length / info.length;
 		os << info.all_stops_count << " stops on route, "
 			<< info.unique_stops_count << " unique stops, "
-			<< info.length << " route length" << endl;
+			<< info.real_length << " route length, "
+			<< std::setprecision(7) << curv << " curvature" << endl;
 	}
 	return os;
 }
@@ -49,6 +51,10 @@ double Length(const Coordinates& lhs, const Coordinates& rhs) {
 		cos(lhs.LatRad()) * cos(rhs.LatRad()) *
 		cos(abs(lhs.LongRad() - rhs.LongRad()))
 	);
+}
+
+double TransportGuider::RealLength(const string& from, const string& to) const {
+	return stops_info.at(from).distances.at(to);
 }
 
 void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) {
@@ -71,7 +77,14 @@ void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) 
 }
 
 void TransportGuider::ProcessStopQuery(StopQuery& query) {
-	stops_info[query.stop_name].coords = query.coords;
+	auto& this_stop = stops_info[query.stop_name];
+	this_stop.coords = query.coords;
+	for (const auto& [stop, dist] : query.distances) {
+		this_stop.distances[stop] = dist;
+		if (!stops_info[stop].distances.count(query.stop_name)) {
+			stops_info[stop].distances[query.stop_name] = dist;
+		}
+	}
 }
 
 GetStopInfo TransportGuider::ProcessGetStopInfoQuery(GetStopInfoQuery& query) const {
@@ -101,10 +114,11 @@ GetBusInfo TransportGuider::ProcessGetBusInfoQuery(GetBusInfoQuery& query) const
 			: 2 * bus_info.stops.size() - 1;
 		info.unique_stops_count = UniqueStopsCount(bus_info.stops);
 		info.length = info.is_circled ? GetLength(bus_info.stops) : 2 * GetLength(bus_info.stops);
+		info.real_length = GetRealLength(bus_info.stops, info.is_circled);
 		return info;
 	}
 	else {
-		return GetBusInfo(move(query.bus_id), 0, 0, 0, 0);
+		return GetBusInfo(move(query.bus_id), 0, 0, 0, 0, 0);
 	}
 }
 
@@ -123,6 +137,16 @@ double TransportGuider::GetLength(const vector<string>& stops) const {
 	}
 	return length;
 }
+
+double TransportGuider::GetRealLength(const vector<string>& stops, bool is_circled) const {
+	double length = 0;
+	for (size_t i = 0; i < stops.size() - 1; ++i) {
+		length += is_circled ? RealLength(stops[i], stops[i + 1]) :
+			(RealLength(stops[i], stops[i + 1]) + RealLength(stops[i+1], stops[i]));
+	}
+	return length;
+}
+
 template<typename Info>
 void TransportGuider::InfoOutput(const Info& info, ostream& stream) const {
 	stream << info;
