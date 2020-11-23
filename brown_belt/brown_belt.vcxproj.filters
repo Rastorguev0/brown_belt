@@ -18,13 +18,16 @@
     <ClInclude Include="test_runner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="final\unit_tests.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="final\input_parsing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="final\guider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="final\json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="final\unit_tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="final\guider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="final\json.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

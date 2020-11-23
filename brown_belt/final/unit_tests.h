@@ -2,8 +2,9 @@
 #include "test_runner.h"
 #include "input_parsing.h"
 #include "guider.h"
+#include <fstream>
 using namespace std;
-
+/*
 bool StopQueriesEqual(const StopQuery& lhs, Query& rhs) {
 	StopQuery* rhs_casted = StopCast(rhs);
 	return rhs_casted ? *rhs_casted == lhs : false;
@@ -231,7 +232,6 @@ void TestProcessGetBusInfoQuery() {
 }
 
 void MainTest() {
-	/*
 	stringstream out("");
 	TransportGuider guider;
 
@@ -257,7 +257,6 @@ Bus 750: 5 stops on route, 3 unique stops, 20939.5 route length
 Bus 751: not found
 )";
 	ASSERT_EQUAL(out.str(), expected);
-	*/
 }
 
 void MainTestV2() {
@@ -297,7 +296,7 @@ Stop Prazhskaya: no buses
 Stop Biryulyovo Zapadnoye: buses 256 828
 )";
 	ASSERT_EQUAL(out.str(), expected);
-	*/
+
 }
 
 void MainTestV3() {
@@ -337,8 +336,58 @@ Stop Biryulyovo Zapadnoye: buses 256 828
 	ASSERT_EQUAL(out.str(), expected);
 }
 
+*/
+void MainTestV4() {
+	ifstream input("final\\input.txt");
+	if (input.is_open()) {
+		vector<QueryPtr> queries = ReadQueries(input);
+		TransportGuider guider;
+
+		ostringstream out;
+		guider.ProcessQueries(move(queries), out);
+		
+		string expected(R"([
+{
+"curvature": 1.36124,
+"request_id": 1965312327,
+"unique_stop_count": 5,
+"route_length": 5950,
+"stop_count": 6
+},
+{
+"request_id": 519139350,
+"curvature": 1.31808,
+"route_length": 27600,
+"unique_stop_count": 3,
+"stop_count": 5
+},
+{
+"request_id": 194217464,
+"error_message": "not found"
+},
+{
+"request_id": 746888088,
+"error_message": "not found"
+},
+{
+"request_id": 65100610,
+"buses": []
+},
+{
+"request_id": 1042838872,
+"buses": [
+"256",
+"828"
+]
+}
+])");
+		ASSERT_EQUAL(out.str(), expected);
+	}
+}
+
 void TestAll() {
 	TestRunner tr;
+	/*
 	RUN_TEST(tr, TestCheckDelimiterType);
 	RUN_TEST(tr, TestGetSeparatedToken);
 	RUN_TEST(tr, TestConvertToDouble);
@@ -352,4 +401,6 @@ void TestAll() {
 	RUN_TEST(tr, MainTest);
 	RUN_TEST(tr, MainTestV2);
 	RUN_TEST(tr, MainTestV3);
+	*/
+	RUN_TEST(tr, MainTestV4);
 }

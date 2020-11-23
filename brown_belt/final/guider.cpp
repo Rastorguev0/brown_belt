@@ -3,7 +3,7 @@
 #include <cmath>
 
 const unsigned R = 6371000;
-
+/*
 ostream& operator<<(ostream& os, const BusInfo& bi) {
 	os << "{ ";
 	for (const auto& stop : bi.stops) {
@@ -44,7 +44,7 @@ ostream& operator<< (ostream& os, const GetBusInfo& info) {
 	}
 	return os;
 }
-
+*/
 double Length(const Coordinates& lhs, const Coordinates& rhs) {
 	return R * acos(
 		sin(lhs.LatRad()) * sin(rhs.LatRad()) +
@@ -58,22 +58,24 @@ double TransportGuider::RealLength(const string& from, const string& to) const {
 }
 
 void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) {
+	vector<Json::Node> nodes;
 	for (const auto& query : queries) {
 		switch (query->type) {
 		case QueryType::STOP:
 			ProcessStopQuery(*StopCast(*query));
 			break;
 		case QueryType::GET_STOP_INFO:
-			InfoOutput(ProcessGetStopInfoQuery(*StopGetCast(*query)), stream);
+			nodes.push_back(NodeFromStop(ProcessGetStopInfoQuery(*StopGetCast(*query))));
 			break;
 		case QueryType::BUS_STOPS:
 			ProcessBusStopsQuery(*BusStopsCast(*query));
 			break;
 		case QueryType::GET_BUS_INFO:
-			InfoOutput(ProcessGetBusInfoQuery(*BusGetCast(*query)), stream);
+			nodes.push_back(NodeFromBus(ProcessGetBusInfoQuery(*BusGetCast(*query))));
 			break;
 		}
 	}
+	InfoOutput(Json::Document(Json::Node(move(nodes))), stream);
 }
 
 void TransportGuider::ProcessStopQuery(StopQuery& query) {
@@ -91,6 +93,7 @@ GetStopInfo TransportGuider::ProcessGetStopInfoQuery(GetStopInfoQuery& query) co
 	GetStopInfo info;
 	info.stop_name = move(query.stop_name);
 	info.found = stops_info.count(info.stop_name);
+	info.req_id = query.req_id;
 	if (info.found) {
 		info.buses = { stops_info.at(info.stop_name).buses.begin(), stops_info.at(info.stop_name).buses.end() };
 	}
@@ -115,10 +118,11 @@ GetBusInfo TransportGuider::ProcessGetBusInfoQuery(GetBusInfoQuery& query) const
 		info.unique_stops_count = UniqueStopsCount(bus_info.stops);
 		info.length = info.is_circled ? GetLength(bus_info.stops) : 2 * GetLength(bus_info.stops);
 		info.real_length = GetRealLength(bus_info.stops, info.is_circled);
+		info.req_id = query.req_id;
 		return info;
 	}
 	else {
-		return GetBusInfo(move(query.bus_id), 0, 0, 0, 0, 0);
+		return GetBusInfo(move(query.bus_id), 0, 0, 0, 0, 0, query.req_id);
 	}
 }
 
@@ -142,14 +146,13 @@ double TransportGuider::GetRealLength(const vector<string>& stops, bool is_circl
 	double length = 0;
 	for (size_t i = 0; i < stops.size() - 1; ++i) {
 		length += is_circled ? RealLength(stops[i], stops[i + 1]) :
-			(RealLength(stops[i], stops[i + 1]) + RealLength(stops[i+1], stops[i]));
+			(RealLength(stops[i], stops[i + 1]) + RealLength(stops[i + 1], stops[i]));
 	}
 	return length;
 }
 
-template<typename Info>
-void TransportGuider::InfoOutput(const Info& info, ostream& stream) const {
-	stream << info;
+void TransportGuider::InfoOutput(const Json::Document& doc, ostream& stream) const {
+	Json::UploadDocument(doc, stream);
 }
 
 const unordered_map<string, StopInfo>& TransportGuider::CheckStops() const {
@@ -158,4 +161,38 @@ const unordered_map<string, StopInfo>& TransportGuider::CheckStops() const {
 
 const unordered_map<string, BusInfo>& TransportGuider::CheckBuses() const {
 	return buses_info;
+}
+
+
+Json::Node NodeFromStop(GetStopInfo info) {
+	unordered_map<string, Json::Node> result;
+	result["request_id"] = Json::Node(static_cast<double>(info.req_id));
+
+	if (!info.found) {
+		result["error_message"] = Json::Node(string("not found"));
+	}
+	else {
+		vector<Json::Node> buses;
+		for (string& bus : info.buses) {
+			buses.push_back(Json::Node(move(bus)));
+		}
+		result["buses"] = Json::Node(move(buses));
+	}
+	return Json::Node(move(result));
+}
+
+Json::Node NodeFromBus(GetBusInfo info) {
+	unordered_map<string, Json::Node> result;
+
+	result["request_id"] = Json::Node(static_cast<double>(info.req_id));
+	if (info.all_stops_count == 0) {
+		result["error_message"] = Json::Node(string("not found"));
+	}
+	else {
+		result["route_length"] = Json::Node(static_cast<double>(info.real_length));
+		result["curvature"] = Json::Node(static_cast<double>(info.real_length / info.length));
+		result["stop_count"] = Json::Node(static_cast<double>(info.all_stops_count));
+		result["unique_stop_count"] = Json::Node(static_cast<double>(info.unique_stops_count));
+	}
+	return Json::Node(move(result));
 }

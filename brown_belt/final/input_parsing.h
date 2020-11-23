@@ -9,9 +9,10 @@
 #include <algorithm>
 #include <tuple>
 #include <unordered_map>
+#include "json.h"
 using namespace std;
 
-const vector<char> DELIMETERS = { '-', '>' };
+//const vector<char> DELIMETERS = { '-', '>' };
 
 enum class QueryType {
 	BUS_STOPS,
@@ -23,6 +24,7 @@ enum class QueryType {
 struct Query {
 	Query() = default;
 	QueryType type;
+	int req_id = 0;
 	virtual QueryType Type() const { return type; }
 };
 
@@ -33,17 +35,19 @@ struct Coordinates {
 	double LatRad() const;
 	double LongRad() const;
 
-	bool operator==(const Coordinates& other) const;
+	bool operator==(const Coordinates& other) const {
+		return make_tuple(latitude, longitude)
+			== make_tuple(other.latitude, other.longitude);
+	}
 };
 
-ostream& operator<<(ostream& os, const Coordinates& c);
+//ostream& operator<<(ostream& os, const Coordinates& c);
 
-using Distances = unordered_map<string, unsigned>;
+using Distances = unordered_map<string, double>;
 struct StopQuery : Query {
-	StopQuery(string_view line);
-
-	StopQuery(string stop, double lat_, double long_, unordered_map<string, unsigned> dist)
-		: stop_name(move(stop)), coords({ lat_, long_ }), distances(move(dist)) {
+	StopQuery(string stop, double lat_, double long_, Distances dist)
+		: stop_name(move(stop)), coords({ lat_, long_ }), distances(move(dist))
+	{
 		type = QueryType::STOP;
 	}
 
@@ -59,9 +63,10 @@ struct StopQuery : Query {
 };
 
 struct GetStopInfoQuery : Query {
-	GetStopInfoQuery(string_view line);
-	GetStopInfoQuery(string name) : stop_name(move(name)) {
+	GetStopInfoQuery(string name, int id) : stop_name(move(name))
+	{
 		type = QueryType::GET_STOP_INFO;
+		req_id = id;
 	}
 
 	bool operator== (const GetStopInfoQuery& other) {
@@ -71,10 +76,9 @@ struct GetStopInfoQuery : Query {
 };
 
 struct BusStopsQuery : Query {
-	BusStopsQuery(string_view line);
-
 	BusStopsQuery(string id, vector<string> stops_, bool circled)
-		: bus_id(move(id)), stops(move(stops_)), is_circled(circled) {
+		: bus_id(move(id)), stops(move(stops_)), is_circled(circled)
+	{
 		type = QueryType::BUS_STOPS;
 	}
 
@@ -89,10 +93,10 @@ struct BusStopsQuery : Query {
 };
 
 struct GetBusInfoQuery : Query {
-	GetBusInfoQuery(string_view line);
-
-	GetBusInfoQuery(string id) : bus_id(move(id)) {
+	GetBusInfoQuery(string id, int r_id) : bus_id(move(id))
+	{
 		type = QueryType::GET_BUS_INFO;
+		req_id = r_id;
 	}
 
 	bool operator==(const GetBusInfoQuery& other) const {
@@ -101,25 +105,25 @@ struct GetBusInfoQuery : Query {
 
 	string bus_id;
 };
-
+/*
 template <typename Number>
 Number ReadNumberOnLine(istream& stream);
 
 double ConvertToDouble(string_view line);
 
 unsigned ConvertFromMeters(string_view line);
-
+*/
 using QueryPtr = unique_ptr<Query>;
-
+/*
 void Trim(string_view& view);
 
 const char CheckDelimiterType(string_view line);
 
 string GetSeparatedToken(string_view& line, const char delimeter = ' ');
+*/
+QueryPtr ParsePutQuery(const Json::Node& query);
 
-QueryPtr ParsePutQuery(string_view line);
-
-QueryPtr ParseGetQuery(string_view line);
+QueryPtr ParseGetQuery(const Json::Node& query);
 
 vector<QueryPtr> ReadQueries(istream& input = cin);
 

@@ -7,51 +7,9 @@ double Coordinates::LongRad() const {
 	return longitude * 3.1415926535 / 180;
 }
 
-bool Coordinates::operator==(const Coordinates& other) const {
-	return make_tuple(latitude, longitude)
-		== make_tuple(other.latitude, other.longitude);
-}
-
+/*
 ostream& operator<<(ostream& os, const Coordinates& c) {
 	return os << c.latitude << " " << c.longitude;
-}
-
-StopQuery::StopQuery(string_view line) {
-	type = QueryType::STOP;
-
-	stop_name = GetSeparatedToken(line, ':');
-	coords = {
-		ConvertToDouble(GetSeparatedToken(line, ',')),
-		ConvertToDouble(GetSeparatedToken(line, ',')),
-	};
-	while (!line.empty()) {
-		unsigned dist = ConvertFromMeters(GetSeparatedToken(line));
-		//"to"
-		GetSeparatedToken(line);
-		string stop = GetSeparatedToken(line, ',');
-		if (stop != "") distances[stop] = dist;
-	}
-}
-
-GetStopInfoQuery::GetStopInfoQuery(string_view line) {
-	type = QueryType::GET_STOP_INFO;
-	stop_name = string(line);
-}
-
-BusStopsQuery::BusStopsQuery(string_view line) {
-	type = QueryType::BUS_STOPS;
-
-	bus_id = GetSeparatedToken(line, ':');
-	const char delimeter = CheckDelimiterType(line);
-	is_circled = delimeter == '>';
-	while (!line.empty()) {
-		stops.push_back(GetSeparatedToken(line, delimeter));
-	}
-}
-
-GetBusInfoQuery::GetBusInfoQuery(string_view line) {
-	type = QueryType::GET_BUS_INFO;
-	bus_id = string(line);
 }
 
 const char CheckDelimiterType(string_view line) {
@@ -111,41 +69,69 @@ unsigned ConvertFromMeters(string_view line) {
 	converter >> result;
 	return result;
 }
+*/
 
-QueryPtr ParsePutQuery(string_view line) {
-	string command = GetSeparatedToken(line);
-	if (command == "Stop") return make_unique<StopQuery>(line);
-	else if (command == "Bus") return make_unique<BusStopsQuery>(line);
-	else throw invalid_argument("Unknown query command");
+QueryPtr ParseGetQuery(const Json::Node& query) {
+	auto map = query.AsMap();
+	if (map.at("type").AsString() == "Stop") {
+		return make_unique<GetStopInfoQuery>(
+			map.at("name").AsString(),
+			static_cast<int>(map.at("id").AsDouble())
+			);
+	}
+	else {
+		return make_unique<GetBusInfoQuery>(
+			map.at("name").AsString(),
+			static_cast<int>(map.at("id").AsDouble())
+			);
+	}
 }
 
-QueryPtr ParseGetQuery(string_view line) {
-	string cmd = GetSeparatedToken(line);
-	if (cmd == "Bus") return make_unique<GetBusInfoQuery>(line);
-	else if (cmd == "Stop") return make_unique<GetStopInfoQuery>(line);
-	else throw invalid_argument("Unknown query command");
+QueryPtr ParsePutQuery(const Json::Node& query) {
+	auto map = query.AsMap();
+
+	if (map.at("type").AsString() == "Stop") {
+
+		Distances distances;
+		for (const auto& dist : map.at("road_distances").AsMap()) {
+			distances.insert({ dist.first, dist.second.AsDouble() });
+		}
+
+		return make_unique<StopQuery>(
+			map.at("name").AsString(),
+			map.at("latitude").AsDouble(),
+			map.at("longitude").AsDouble(),
+			move(distances)
+			);
+	}
+	else {
+
+		vector<string> stops;
+		stops.reserve(map.at("stops").AsArray().size());
+		for (const auto& stop : map.at("stops").AsArray()) {
+			stops.push_back(stop.AsString());
+		}
+		return make_unique<BusStopsQuery>(
+			map.at("name").AsString(),
+			move(stops),
+			map.at("is_roundtrip").AsBool()
+			);
+	}
 }
 
 vector<QueryPtr> ReadQueries(istream& input) {
 	vector<QueryPtr> queries;
-	int put_query_count = ReadNumberOnLine<int>(input);
-	queries.reserve(put_query_count);
+	
+	Json::Document doc = Json::Load(input);
+	auto base_requests = doc.GetRoot().AsMap().at("base_requests");
+	auto stat_requests = doc.GetRoot().AsMap().at("stat_requests");
 
-	for (int i = 0; i < put_query_count; i++) {
-		string line;
-		getline(input, line);
-		queries.push_back(ParsePutQuery(line));
+	for (const auto& req : base_requests.AsArray()) {
+		queries.push_back(ParsePutQuery(req));
 	}
-
-	int get_query_count = ReadNumberOnLine<int>(input);
-	queries.reserve(put_query_count + get_query_count);
-
-	for (int i = 0; i < get_query_count; i++) {
-		string line;
-		getline(input, line);
-		queries.push_back(ParseGetQuery(line));
+	for (const auto& req : stat_requests.AsArray()) {
+		queries.push_back(ParseGetQuery(req));
 	}
-
 	return queries;
 }
 
