@@ -43,8 +43,6 @@ struct GetStopInfo {
 	}
 };
 
-//ostream& operator << (ostream& os, const GetStopInfo& info);
-
 Json::Node NodeFromStop(GetStopInfo info);
 
 struct BusInfo {
@@ -60,8 +58,6 @@ struct BusInfo {
 			make_tuple(other.stops, other.is_circled);
 	}
 };
-
-//ostream& operator<<(ostream& os, const BusInfo& bi);
 
 struct GetBusInfo {
 	//bus not found = all_stops_count == 0
@@ -83,8 +79,6 @@ struct GetBusInfo {
 			make_tuple(other.bus_id, other.all_stops_count, other.unique_stops_count, other.length, other.real_length);
 	}
 };
-
-//ostream& operator<<(ostream& os, const GetBusInfo& info);
 
 Json::Node NodeFromBus(GetBusInfo info);
 

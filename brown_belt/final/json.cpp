@@ -43,7 +43,7 @@ namespace Json {
 	}
 
 	Node LoadDict(istream& input) {
-		unordered_map<string, Node> result;
+		map<string, Node> result;
 
 		for (char c; input >> c && c != '}'; ) {
 			if (c == ',') {
@@ -59,9 +59,14 @@ namespace Json {
 	}
 
 	Node LoadBool(istream& input) {
-		string buf;
-		input >> buf;
-		return buf == "true";
+		if (input.peek() == 't') {
+			input.ignore(4);
+			return Node(true);
+		}
+		else {
+			input.ignore(5);
+			return Node(false);
+		}
 	}
 
 	Node LoadNode(istream& input) {
@@ -77,17 +82,16 @@ namespace Json {
 		else if (c == '"') {
 			return LoadString(input);
 		}
-		else {
-			if (isdigit(c) || c == '.' || c == '-') {
-				input.putback(c);
-				return LoadNumber(input);
-			}
-			else if (c == 't' || c == 'f') {
-				input.putback(c);
-				return LoadBool(input);
-			}
-			else return Node();
+		else if (isdigit(c) || c == '.' || c == '-') {
+			input.putback(c);
+			return LoadNumber(input);
 		}
+		else if (c == 't' || c == 'f') {
+			input.putback(c);
+			return LoadBool(input);
+		}
+		return LoadNode(input);
+
 	}
 
 	Document Load(istream& input) {
@@ -95,7 +99,7 @@ namespace Json {
 	}
 
 	//UPLOADING FUNCTIONS
-	
+
 	void UploadNode(const Node& node, ostream& out);
 
 	void UploadArray(const Node& node, ostream& out) {
@@ -110,7 +114,7 @@ namespace Json {
 		out << "]";
 	}
 	void UploadDict(const Node& node, ostream& out) {
-		unordered_map<string, Node> nodes = node.AsMap();
+		map<string, Node> nodes = node.AsMap();
 		out << "{";
 		for (auto it = nodes.begin(); it != nodes.end(); ++it) {
 			out << endl << '"' << it->first << "\": ";
@@ -125,7 +129,7 @@ namespace Json {
 	}
 	void UploadDouble(const Node& node, ostream& out) {
 		stringstream buf;
-		buf << fixed << setprecision(5) << node.AsDouble();
+		buf << fixed << node.AsDouble();
 		string result = buf.str();
 		while (result.back() == '0') result.resize(result.size() - 1);
 		if (result.back() == '.') result.resize(result.size() - 1);
@@ -134,7 +138,7 @@ namespace Json {
 
 	void UploadNode(const Node& node, ostream& out) {
 		if (holds_alternative<vector<Node>>(node)) UploadArray(node, out);
-		else if (holds_alternative<unordered_map<string, Node>>(node)) UploadDict(node, out);
+		else if (holds_alternative<map<string, Node>>(node)) UploadDict(node, out);
 		else if (holds_alternative<string>(node)) UploadString(node, out);
 		else if (holds_alternative<double>(node)) UploadDouble(node, out);
 	}
@@ -142,5 +146,5 @@ namespace Json {
 	void UploadDocument(const Document& doc, ostream& out) {
 		UploadNode(doc.GetRoot(), out);
 	}
-	
+
 }

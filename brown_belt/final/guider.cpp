@@ -3,48 +3,7 @@
 #include <cmath>
 
 const unsigned R = 6371000;
-/*
-ostream& operator<<(ostream& os, const BusInfo& bi) {
-	os << "{ ";
-	for (const auto& stop : bi.stops) {
-		os << stop << " ";
-	}
-	return os << " } " << ", " << bi.is_circled << endl;
-}
 
-ostream& operator<<(ostream& os, const StopInfo& si) {
-	return os << si.coords;
-}
-
-ostream& operator << (ostream& os, const GetStopInfo& info) {
-	os << "Stop " << info.stop_name << ": ";
-	if (!info.found) os << "not found" << endl;
-	else {
-		if (info.buses.size() == 0)	os << "no buses" << endl;
-		else {
-			os << "buses";
-			for (const auto& bus : info.buses) {
-				os << " " << bus;
-			}
-			os << endl;
-		}
-	}
-	return os;
-}
-
-ostream& operator<< (ostream& os, const GetBusInfo& info) {
-	os << "Bus " << info.bus_id << ": ";
-	if (info.all_stops_count == 0) os << "not found" << endl;
-	else {
-		double curv = info.real_length / info.length;
-		os << info.all_stops_count << " stops on route, "
-			<< info.unique_stops_count << " unique stops, "
-			<< info.real_length << " route length, "
-			<< std::setprecision(7) << curv << " curvature" << endl;
-	}
-	return os;
-}
-*/
 double Length(const Coordinates& lhs, const Coordinates& rhs) {
 	return R * acos(
 		sin(lhs.LatRad()) * sin(rhs.LatRad()) +
@@ -165,7 +124,7 @@ const unordered_map<string, BusInfo>& TransportGuider::CheckBuses() const {
 
 
 Json::Node NodeFromStop(GetStopInfo info) {
-	unordered_map<string, Json::Node> result;
+	map<string, Json::Node> result;
 	result["request_id"] = Json::Node(static_cast<double>(info.req_id));
 
 	if (!info.found) {
@@ -182,7 +141,7 @@ Json::Node NodeFromStop(GetStopInfo info) {
 }
 
 Json::Node NodeFromBus(GetBusInfo info) {
-	unordered_map<string, Json::Node> result;
+	map<string, Json::Node> result;
 
 	result["request_id"] = Json::Node(static_cast<double>(info.req_id));
 	if (info.all_stops_count == 0) {

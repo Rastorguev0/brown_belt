@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-	//TestAll();
+	TestAll();
 	vector<QueryPtr> queries = ReadQueries();
 	TransportGuider guider;
 	guider.ProcessQueries(move(queries));

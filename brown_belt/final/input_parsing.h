@@ -12,8 +12,6 @@
 #include "json.h"
 using namespace std;
 
-//const vector<char> DELIMETERS = { '-', '>' };
-
 enum class QueryType {
 	BUS_STOPS,
 	STOP,
@@ -40,8 +38,6 @@ struct Coordinates {
 			== make_tuple(other.latitude, other.longitude);
 	}
 };
-
-//ostream& operator<<(ostream& os, const Coordinates& c);
 
 using Distances = unordered_map<string, double>;
 struct StopQuery : Query {
@@ -105,22 +101,9 @@ struct GetBusInfoQuery : Query {
 
 	string bus_id;
 };
-/*
-template <typename Number>
-Number ReadNumberOnLine(istream& stream);
 
-double ConvertToDouble(string_view line);
-
-unsigned ConvertFromMeters(string_view line);
-*/
 using QueryPtr = unique_ptr<Query>;
-/*
-void Trim(string_view& view);
 
-const char CheckDelimiterType(string_view line);
-
-string GetSeparatedToken(string_view& line, const char delimeter = ' ');
-*/
 QueryPtr ParsePutQuery(const Json::Node& query);
 
 QueryPtr ParseGetQuery(const Json::Node& query);

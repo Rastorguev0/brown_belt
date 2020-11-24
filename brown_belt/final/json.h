@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <unordered_map>
+#include <map>
 #include <string>
 #include <sstream>
 #include <variant>
@@ -12,7 +12,7 @@ namespace Json {
   class Node;
 
   class Node : public std::variant<std::vector<Node>,
-                            std::unordered_map<std::string, Node>,
+                            std::map<std::string, Node>,
                             double,
                             bool,
                             std::string>
@@ -24,7 +24,7 @@ namespace Json {
       return std::get<std::vector<Node>>(*this);
     }
     const auto& AsMap() const {
-      return std::get<std::unordered_map<std::string, Node>>(*this);
+      return std::get<std::map<std::string, Node>>(*this);
     }
     double AsDouble() const {
       return std::get<double>(*this);
