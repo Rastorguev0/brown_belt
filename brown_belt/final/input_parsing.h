@@ -17,6 +17,8 @@ enum class QueryType {
 	STOP,
 	GET_STOP_INFO,
 	GET_BUS_INFO,
+	SETTINGS,
+	ROUTE
 };
 
 struct Query {
@@ -39,19 +41,22 @@ struct Coordinates {
 	}
 };
 
+struct SettingsQuery : Query {
+	SettingsQuery(double t, double v) : w_time(t), b_vel(v)
+	{
+		type = QueryType::SETTINGS;
+	}
+	double w_time; //min
+	double b_vel; //km/min
+};
+
 using Distances = unordered_map<string, double>;
 struct StopQuery : Query {
-	StopQuery(string stop, double lat_, double long_, Distances dist)
-		: stop_name(move(stop)), coords({ lat_, long_ }), distances(move(dist))
+	StopQuery(const string& stop, double lat_, double long_, const Distances& dist)
+		: stop_name(stop), coords({ lat_, long_ }), distances(dist)
 	{
 		type = QueryType::STOP;
 	}
-
-	bool operator==(const StopQuery& other) const {
-		return make_tuple(stop_name, coords, distances)
-			== make_tuple(other.stop_name, other.coords, other.distances);
-	}
-
 
 	string stop_name;
 	Distances distances;
@@ -59,28 +64,20 @@ struct StopQuery : Query {
 };
 
 struct GetStopInfoQuery : Query {
-	GetStopInfoQuery(string name, int id) : stop_name(move(name))
+	GetStopInfoQuery(const string& name, int id) : stop_name(name)
 	{
 		type = QueryType::GET_STOP_INFO;
 		req_id = id;
 	}
 
-	bool operator== (const GetStopInfoQuery& other) {
-		return stop_name == other.stop_name;
-	}
 	string stop_name;
 };
 
 struct BusStopsQuery : Query {
-	BusStopsQuery(string id, vector<string> stops_, bool circled)
-		: bus_id(move(id)), stops(move(stops_)), is_circled(circled)
+	BusStopsQuery(const string& id, const vector<string>& stops_, bool circled)
+		: bus_id(id), stops(stops_), is_circled(circled)
 	{
 		type = QueryType::BUS_STOPS;
-	}
-
-	bool operator==(const BusStopsQuery& other) const {
-		return make_tuple(bus_id, stops, is_circled)
-			== make_tuple(other.bus_id, other.stops, other.is_circled);
 	}
 
 	string bus_id;
@@ -89,17 +86,23 @@ struct BusStopsQuery : Query {
 };
 
 struct GetBusInfoQuery : Query {
-	GetBusInfoQuery(string id, int r_id) : bus_id(move(id))
+	GetBusInfoQuery(const string& id, int r_id) : bus_id(id)
 	{
 		type = QueryType::GET_BUS_INFO;
 		req_id = r_id;
 	}
 
-	bool operator==(const GetBusInfoQuery& other) const {
-		return bus_id == other.bus_id;
-	}
-
 	string bus_id;
+};
+
+struct RouteQuery : Query {
+	RouteQuery(const string& f, const string& t, int id)
+		: from(f), to(t)
+	{
+		type = QueryType::ROUTE;
+		req_id = id;
+	}
+	string from, to;
 };
 
 using QueryPtr = unique_ptr<Query>;
@@ -110,6 +113,8 @@ QueryPtr ParseGetQuery(const Json::Node& query);
 
 vector<QueryPtr> ReadQueries(istream& input = cin);
 
+SettingsQuery* SetCast(Query& query);
+
 StopQuery* StopCast(Query& query);
 
 GetStopInfoQuery* StopGetCast(Query& query);
@@ -117,3 +122,5 @@ GetStopInfoQuery* StopGetCast(Query& query);
 BusStopsQuery* BusStopsCast(Query& query);
 
 GetBusInfoQuery* BusGetCast(Query& query);
+
+RouteQuery* RouteCast(Query& query);

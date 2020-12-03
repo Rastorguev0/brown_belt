@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="final\graph.h" />
     <ClInclude Include="final\guider.h" />
     <ClInclude Include="final\input_parsing.h" />
     <ClInclude Include="final\json.h" />
+    <ClInclude Include="final\router.h" />
     <ClInclude Include="final\unit_tests.h" />
     <ClInclude Include="test_runner.h" />
   </ItemGroup>

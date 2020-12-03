@@ -30,6 +30,12 @@
     <ClInclude Include="final\unit_tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="final\graph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="final\router.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp">
