@@ -57,7 +57,7 @@ protected:
 	void CreateGraph();
 	const Graph::Edge<EdgeTime>& GetEdge(vector<Graph::EdgeId>::iterator it) const;
 	Graph::Edge<EdgeTime> CreateEdge(
-		const pair<string, BusInfo>& bus_pair, size_t from_idx, size_t to_idx, bool transfer = false
+		const pair<const string, BusInfo>& bus_pair, size_t from_idx, size_t to_idx, bool transfer = false
 	);
 	size_t GetId(string_view stop); //returns the stop id
 	pair<double, vector<ItemPtr>> CreateItems(Graph::Router<EdgeTime>::RouteInfo info) const;

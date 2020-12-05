@@ -49,7 +49,7 @@ void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) 
 
 void TransportGuider::SetConfig(SettingsQuery& query) {
 	cfg.time = query.w_time;
-	cfg.time = query.b_vel;
+	cfg.velocity = query.b_vel;
 }
 
 void TransportGuider::ProcessStopQuery(StopQuery& query) {
@@ -111,21 +111,23 @@ pair<double, vector<ItemPtr>> TransportGuider::CreateItems(Graph::Router<EdgeTim
 		edges.push_back(router_ptr->GetRouteEdge(info.id, i));
 	}
 	vector<ItemPtr> result;
-	for (auto it_begin = edges.begin(), it_end = edges.end(); it_begin != it_end; ) {
+	auto it_begin = edges.begin();
+	for (const auto it_end = edges.end(); it_begin != it_end;) {
 		auto& edge = GetEdge(it_begin);
 		result.push_back(make_unique<Wait>(string(id_stops[edge.from]), cfg.time));
-		auto cur_bus = edge.weight.cur_bus;
+		total_time += cfg.time;
 
+		auto cur_bus = edge.weight.cur_bus;
 		int counter = 0;
 		double time = 0;
-		for (auto it_seek = it_begin; it_seek != it_end
-			&& GetEdge(it_seek).weight.cur_bus == GetEdge(next(it_seek)).weight.cur_bus;
-			it_seek++) {
+		for (; counter == 0 || (it_begin < prev(it_end)
+			&& GetEdge(it_begin).weight.cur_bus == GetEdge(next(it_begin)).weight.cur_bus);
+			it_begin++) {
 			counter++;
-			time += GetEdge(it_seek).weight.time;
-			it_begin = next(it_seek);
+			time += GetEdge(it_begin).weight.time;
 		}
 		result.push_back(make_unique<Bus>(string(cur_bus), counter, time));
+		total_time += time;
 	}
 
 	return make_pair(total_time, move(result));
@@ -222,7 +224,7 @@ Json::Node NodeFromBus(GetBusInfo info) {
 Json::Node NodeFromItem(ItemPtr item) {
 	using Json::Node;
 	map<string, Node> result;
-	result["type"] = Node(move(item->type));
+	result["type"] = Node(item->type);
 	result["time"] = Node(item->time);
 	if (item->type == "Wait") {
 		result["stop_name"] = Node(move(static_cast<Wait*>(item.get())->name));
@@ -268,7 +270,7 @@ size_t TransportGuider::GetId(string_view stop) {
 }
 
 Graph::Edge<TransportGuider::EdgeTime> TransportGuider::CreateEdge(
-	const pair<string, BusInfo>& bus_pair, size_t from_idx, size_t to_idx, bool transfer
+	const pair<const string, BusInfo>& bus_pair, size_t from_idx, size_t to_idx, bool transfer
 ) {
 	auto& bus = bus_pair.second;
 	size_t from = GetId(bus.stops[from_idx]);
@@ -276,8 +278,8 @@ Graph::Edge<TransportGuider::EdgeTime> TransportGuider::CreateEdge(
 
 	return Graph::Edge<TransportGuider::EdgeTime>{
 		from, to,
-			EdgeTime{ bus_pair.first,
-			RealLength(bus.stops[from_idx], bus.stops[to_idx]) / cfg.velocity,
+		EdgeTime{ bus_pair.first,
+			RealLength(bus.stops[from_idx], bus.stops[to_idx]) / cfg.velocity / 1000,
 			cfg.time,
 			transfer }
 	};
@@ -312,9 +314,9 @@ bool operator > (const TransportGuider::EdgeTime& lhs, const TransportGuider::Ed
 bool operator >= (const TransportGuider::EdgeTime& lhs, const TransportGuider::EdgeTime& rhs) {
 	return lhs.time >= rhs.time + rhs.wait_time;
 }
-
+	
 bool operator < (const TransportGuider::EdgeTime& lhs, const TransportGuider::EdgeTime& rhs) {
-	return lhs.time < rhs.time + rhs.wait_time;
+	return lhs.time < rhs.time - rhs.wait_time;
 }
 
 TransportGuider::EdgeTime operator + (const TransportGuider::EdgeTime& lhs, const TransportGuider::EdgeTime& rhs) {
