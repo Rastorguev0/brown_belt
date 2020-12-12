@@ -20,18 +20,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="final\graph.h" />
+    <ClInclude Include="final\graph_creating.h" />
     <ClInclude Include="final\guider.h" />
     <ClInclude Include="final\input_parsing.h" />
     <ClInclude Include="final\json.h" />
+    <ClInclude Include="final\responses.h" />
     <ClInclude Include="final\router.h" />
     <ClInclude Include="final\unit_tests.h" />
     <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp" />
+    <ClCompile Include="final\graph_creating.cpp" />
     <ClCompile Include="final\guider.cpp" />
     <ClCompile Include="final\input_parcing.cpp" />
     <ClCompile Include="final\json.cpp" />
+    <ClCompile Include="final\responses.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

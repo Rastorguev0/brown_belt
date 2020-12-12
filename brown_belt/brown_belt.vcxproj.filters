@@ -36,6 +36,12 @@
     <ClInclude Include="final\router.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="final\responses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="final\graph_creating.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp">
@@ -48,6 +54,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="final\json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="final\graph_creating.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="final\responses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
