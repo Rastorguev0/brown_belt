@@ -54,7 +54,7 @@ struct Wait : Item {
 	Wait(string name_, double time_) {
 		type = "Wait";
 		name = move(name_);
-		time = move(time_);
+		time = time_;
 	}
 	string name;
 };

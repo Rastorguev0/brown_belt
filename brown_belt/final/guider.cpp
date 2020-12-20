@@ -15,6 +15,8 @@ double Length(const Coordinates& lhs, const Coordinates& rhs) {
 
 /* PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS */
 
+TransportGuider::TransportGuider() : TG(TransportGraph{ stops_info, buses_info, cfg }) {};
+
 
 void TransportGuider::ProcessQueries(vector<QueryPtr> queries, ostream& stream) {
 	vector<Json::Node> nodes;
@@ -101,15 +103,31 @@ GetRouteInfo TransportGuider::ProcessGetRouteInfoQuery(RouteQuery& query) const 
 	GetRouteInfo result;
 	if (query.from == query.to) return { query.req_id, 0, {}, true };
 	result.req_id = query.req_id;
-	optional<Graph::Router<double>::RouteInfo> route
-		= TG.BuildRoute(TG.StopId(query.from), TG.StopId(query.to));
-	if (route) {
-		result.found = true;
-		auto [time, items] = TG.CreateItems(route.value());
-		result.total_time = time;
-		result.items = move(items);
+
+	optional<double> total_time;
+	for (size_t to_id : TG.CheckKnots().at(query.to).vertexes) {
+		optional<Graph::Router<double>::RouteInfo> route
+			= TG.BuildRoute(TG.StopId(query.from), to_id);
+		if (route) {
+			bool found = true;
+			auto [time, items] = TG.CreateItems(route.value());
+			if (!total_time) {
+				result.found = found;
+				result.total_time = time;
+				result.items = move(items);
+				total_time = time;
+			}
+			else {
+				if (time < total_time) {
+					result.found = found;
+					result.total_time = time;
+					result.items = move(items);
+					total_time = time;
+				}
+			}
+			TG.ReleaseRouteCache(route.value().id); //не уверен что надо каждый раз очищать кеш
+		}
 	}
-	TG.ReleaseRouteCache(route.value().id); //не уверен что надо каждый раз очищать кеш
 	return result;
 }
 
@@ -133,7 +151,7 @@ double TransportGuider::RealLength(const string& from, const string& to) const {
 	return stops_info.at(from).distances.at(to);
 }
 
-const TransportGuider::Settings& TransportGuider::CheckSettings() const {
+const Settings& TransportGuider::CheckSettings() const {
 	return cfg;
 }
 

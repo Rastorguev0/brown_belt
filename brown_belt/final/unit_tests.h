@@ -8,7 +8,7 @@
 using namespace std;
 
 void Test1() {
-	ifstream input("final\\input1.json");
+	ifstream input("final\\input4.json");
 	if (input.is_open()) {
 		vector<QueryPtr> queries = ReadQueries(input);
 		TransportGuider guider;

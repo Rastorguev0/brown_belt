@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="final\graph.h" />
-    <ClInclude Include="final\graph_creating.h" />
     <ClInclude Include="final\guider.h" />
     <ClInclude Include="final\input_parsing.h" />
     <ClInclude Include="final\json.h" />
@@ -36,6 +35,12 @@
     <ClCompile Include="final\input_parcing.cpp" />
     <ClCompile Include="final\json.cpp" />
     <ClCompile Include="final\responses.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="final\input1.json" />
+    <None Include="final\input2.json" />
+    <None Include="final\input3.json" />
+    <None Include="final\input4.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -137,6 +142,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>MaxSpeed</Optimization>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

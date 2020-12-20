@@ -39,9 +39,6 @@
     <ClInclude Include="final\responses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="final\graph_creating.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp">
@@ -62,5 +59,19 @@
     <ClCompile Include="final\responses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="final\input1.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="final\input2.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="final\input3.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="final\input4.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
