@@ -39,6 +39,9 @@
     <ClInclude Include="final\responses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="final\final_main.cpp">

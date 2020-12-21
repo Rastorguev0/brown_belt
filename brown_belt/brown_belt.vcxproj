@@ -26,6 +26,7 @@
     <ClInclude Include="final\responses.h" />
     <ClInclude Include="final\router.h" />
     <ClInclude Include="final\unit_tests.h" />
+    <ClInclude Include="profile.h" />
     <ClInclude Include="test_runner.h" />
   </ItemGroup>
   <ItemGroup>
@@ -141,7 +142,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>

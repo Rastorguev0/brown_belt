@@ -69,6 +69,8 @@ class TransportGraph {
 private:
 	using Stops = unordered_map<string, StopInfo>;
 	using Buses = unordered_map<string, BusInfo>;
+	using DoubleGraph = Graph::DirectedWeightedGraph<double>;
+	using Router = Graph::Router<double>;
 public:
 	TransportGraph(const Stops& s, const Buses& b, const Settings& set)
 		: stops_(s), buses_(b), config_(set) {}
@@ -97,8 +99,8 @@ private:
 	const Buses& buses_;
 	const Settings& config_;
 
-	optional<Graph::DirectedWeightedGraph<double>> graph;
-	mutable unique_ptr<Graph::Router<double>> router_ptr;
+	optional<DoubleGraph> graph;
+	mutable unique_ptr<Router> router_ptr;
 
 	unordered_map<string_view, Knot> knots_;
 	vector<string_view> id_to_knot;

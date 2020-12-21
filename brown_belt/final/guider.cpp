@@ -103,7 +103,7 @@ GetRouteInfo TransportGuider::ProcessGetRouteInfoQuery(RouteQuery& query) const 
 	GetRouteInfo result;
 	if (query.from == query.to) return { query.req_id, 0, {}, true };
 	result.req_id = query.req_id;
-
+	
 	optional<double> total_time;
 	for (size_t to_id : TG.CheckKnots().at(query.to).vertexes) {
 		optional<Graph::Router<double>::RouteInfo> route

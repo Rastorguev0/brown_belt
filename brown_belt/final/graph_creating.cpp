@@ -1,4 +1,5 @@
 #include "guider.h"
+#include "profile.h"
 #include <cassert>
 
 /* PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS---PUBLIC_METHODS */
@@ -25,33 +26,36 @@ size_t TransportGraph::StopId(string_view stop) const {
 }
 
 void TransportGraph::Create() {
-	const size_t vertex_count = AllStopsCount();
-	id_to_knot.resize(vertex_count);
-	graph = Graph::DirectedWeightedGraph<double>(vertex_count);
-	for (const auto& bus : buses_) {
-		if (bus.second.is_circled) {
-			size_t from_id = NewVertex(bus.second.stops[0]);
-			size_t to_id = NewVertex(bus.second.stops[1]);
-			CreateBusEdge(from_id, to_id, bus.first);
-
-			for (size_t i = 1; i < bus.second.stops.size() - 1; i++) {
-				size_t from_id = LastVertex(); //vertex i
-				size_t to_id = NewVertex(bus.second.stops[i + 1]);
+	{
+		LOG_DURATION("Graph creating");
+		const size_t vertex_count = AllStopsCount();
+		id_to_knot.resize(vertex_count);
+		graph = Graph::DirectedWeightedGraph<double>(vertex_count);
+		for (const auto& bus : buses_) {
+			if (bus.second.is_circled) {
+				size_t from_id = NewVertex(bus.second.stops[0]);
+				size_t to_id = NewVertex(bus.second.stops[1]);
 				CreateBusEdge(from_id, to_id, bus.first);
-			} //по идее последняя вершина должна соединиться с первой сама
-		}
-		else {
-			size_t from_id = NewVertex(bus.second.stops[0]);
-			size_t to_id = NewVertex(bus.second.stops[1]);
-			CreateBusEdge(to_id, from_id, bus.first);
-			size_t transfer = NewVertex(bus.second.stops[0]); //должна свЗаться с вершиной from_id
-			CreateBusEdge(transfer, to_id, bus.first); //важна последовательность!!!
 
-			for (size_t i = 1; i < bus.second.stops.size() - 1; i++) {
-				size_t from_id = LastVertex(); //vertex i
-				size_t to_id = NewVertex(bus.second.stops[i + 1]);
+				for (size_t i = 1; i < bus.second.stops.size() - 1; i++) {
+					size_t from_id = LastVertex(); //vertex i
+					size_t to_id = NewVertex(bus.second.stops[i + 1]);
+					CreateBusEdge(from_id, to_id, bus.first);
+				} //по идее последняя вершина должна соединиться с первой сама
+			}
+			else {
+				size_t from_id = NewVertex(bus.second.stops[0]);
+				size_t to_id = NewVertex(bus.second.stops[1]);
 				CreateBusEdge(to_id, from_id, bus.first);
-				CreateBusEdge(from_id, to_id, bus.first);
+				size_t transfer = NewVertex(bus.second.stops[0]); //должна свЗаться с вершиной from_id
+				CreateBusEdge(transfer, to_id, bus.first); //важна последовательность!!!
+
+				for (size_t i = 1; i < bus.second.stops.size() - 1; i++) {
+					size_t from_id = LastVertex(); //vertex i
+					size_t to_id = NewVertex(bus.second.stops[i + 1]);
+					CreateBusEdge(to_id, from_id, bus.first);
+					CreateBusEdge(from_id, to_id, bus.first);
+				}
 			}
 		}
 	}
