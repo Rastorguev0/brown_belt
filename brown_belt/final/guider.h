@@ -49,20 +49,14 @@ struct BusInfo {
 };
 
 
-struct EdgeInfo {
-	string type;
-	string_view name;
-	double time;
+struct Settings {
+	double time = 0; // min
+	double velocity = 0; // km/min
 };
 
 struct Knot {
-	size_t id; //мб ненужное поле
-	unordered_set<size_t> vertexes;
-};
-
-struct Settings {
-	double time = 0;
-	double velocity = 0;
+	Graph::VertexId in;
+	Graph::VertexId out;
 };
 
 class TransportGraph {
@@ -72,39 +66,31 @@ private:
 	using DoubleGraph = Graph::DirectedWeightedGraph<double>;
 	using Router = Graph::Router<double>;
 public:
-	TransportGraph(const Stops& s, const Buses& b, const Settings& set)
-		: stops_(s), buses_(b), config_(set) {}
+	TransportGraph(
+		const Stops& s, const Buses& b, const Settings& set
+	) : stops_(s), buses_(b), config_(set) {}
 
 	bool GraphExist() const;
-	size_t StopId(string_view stop) const;
-	optional<Graph::Router<double>::RouteInfo> BuildRoute(size_t from, size_t to) const;
-	void ReleaseRouteCache(uint64_t id) const;
-	pair<double, vector<ItemPtr>> CreateItems(Graph::Router<double>::RouteInfo info) const;
+	Graph::VertexId StopId(string_view stop) const;
+	optional<GetRouteInfo> BuildRoute(Graph::VertexId from, Graph::VertexId to) const;
 	void Create();
-	const unordered_map<string_view, Knot>& CheckKnots() const;
 
 private:
-	size_t AllStopsCount() const;
-	void CreateWaitEdge(size_t from, size_t to);
-	void CreateBusEdge(size_t from, size_t to, string_view bus_name);
-	void TieToKnot(const unordered_set<size_t>& other, size_t v);
-	size_t NewVertex(string_view v);
-	size_t LastVertex() const;
 	double Length(size_t from, size_t to) const;
-private:
-	int last_id = -1;
-	int last_bus_edge_to_id = -1;
+	void FillWithStops();
+	void FillWithBuses();
+	void AddEdge(string_view name, Graph::VertexId from, Graph::VertexId to, double time, size_t spans);
 private:
 	const Stops& stops_;
 	const Buses& buses_;
 	const Settings& config_;
 
 	optional<DoubleGraph> graph;
-	mutable unique_ptr<Router> router_ptr;
+	unique_ptr<Router> router_ptr;
 
 	unordered_map<string_view, Knot> knots_;
-	vector<string_view> id_to_knot;
-	deque<EdgeInfo> edges_;
+	vector<string_view> id_to_stop_;
+	deque<ItemPtr> edges_;
 };
 
 

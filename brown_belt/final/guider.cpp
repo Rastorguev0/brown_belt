@@ -1,4 +1,5 @@
 #include "guider.h"
+#include "profile.h"
 #include <algorithm>
 #include <cmath>
 
@@ -101,37 +102,20 @@ GetBusInfo TransportGuider::ProcessGetBusInfoQuery(GetBusInfoQuery& query) const
 
 GetRouteInfo TransportGuider::ProcessGetRouteInfoQuery(RouteQuery& query) const {
 	GetRouteInfo result;
-	if (query.from == query.to) return { query.req_id, 0, {}, true };
+	//if (query.from == query.to) return { query.req_id, 0, {}, true };
 	result.req_id = query.req_id;
-	
-	optional<double> total_time;
-	for (size_t to_id : TG.CheckKnots().at(query.to).vertexes) {
-		optional<Graph::Router<double>::RouteInfo> route
-			= TG.BuildRoute(TG.StopId(query.from), to_id);
-		if (route) {
-			bool found = true;
-			auto [time, items] = TG.CreateItems(route.value());
-			if (!total_time) {
-				result.found = found;
-				result.total_time = time;
-				result.items = move(items);
-				total_time = time;
-			}
-			else {
-				if (time < total_time) {
-					result.found = found;
-					result.total_time = time;
-					result.items = move(items);
-					total_time = time;
-				}
-			}
-			TG.ReleaseRouteCache(route.value().id); //не уверен что надо каждый раз очищать кеш
-		}
+
+	auto route = TG.BuildRoute(TG.StopId(query.from), TG.StopId(query.to));
+	if (route) {
+		result.found = true;
+		result.items = move(route.value().items);
+		result.total_time = route.value().total_time;
 	}
 	return result;
 }
 
 void TransportGuider::InfoOutput(const Json::Document& doc, ostream& stream) const {
+	LOG_DURATION("Output");
 	Json::UploadDocument(doc, stream);
 }
 

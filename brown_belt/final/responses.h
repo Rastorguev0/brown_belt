@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 #include <utility>
+#include <memory>
 using namespace std;
 
 struct GetStopInfo {
@@ -15,7 +16,7 @@ struct GetStopInfo {
 	string stop_name;
 	bool found = 0;
 	vector<string> buses;
-	double req_id;
+	double req_id = 0;
 
 	bool operator==(const GetStopInfo& other) const {
 		return make_tuple(stop_name, found, buses)
@@ -36,7 +37,7 @@ struct GetBusInfo {
 	double length = 0;
 	double real_length = 0;
 	bool is_circled = 0;
-	double req_id;
+	double req_id = 0;
 
 	bool operator== (const GetBusInfo& other) const {
 		return make_tuple(bus_id, all_stops_count, unique_stops_count, length, real_length) ==
@@ -51,24 +52,24 @@ struct Item {
 };
 
 struct Wait : Item {
-	Wait(string name_, double time_) {
+	Wait(string_view name_, double time_) {
 		type = "Wait";
 		name = move(name_);
 		time = time_;
 	}
-	string name;
+	string_view name;
 };
 
-using ItemPtr = unique_ptr<Item>;
+using ItemPtr = shared_ptr<Item>;
 
 struct Bus : Item {
-	Bus(string bus_, int spans_, double time_) {
+	Bus(string_view bus_, int spans_, double time_) {
 		type = "Bus";
 		bus = move(bus_);
 		spans = spans_;
 		time = time_;
 	}
-	string bus;
+	string_view bus;
 	int spans;
 };
 

@@ -15,6 +15,7 @@ void Test1() {
 	if (input.is_open()) {
 		vector<QueryPtr> queries;
 		{
+			LOG_DURATION("READING");
 			queries = ReadQueries(input);
 		}
 		TransportGuider guider;

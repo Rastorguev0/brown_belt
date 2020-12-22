@@ -41,10 +41,10 @@ Json::Node NodeFromItem(ItemPtr item) {
 	result["type"] = Node(item->type);
 	result["time"] = Node(item->time);
 	if (item->type == "Wait") {
-		result["stop_name"] = Node(move(static_cast<Wait*>(item.get())->name));
+		result["stop_name"] = Node(string(static_cast<Wait*>(item.get())->name));
 	}
 	else if (item->type == "Bus") {
-		result["bus"] = Node(move(static_cast<Bus*>(item.get())->bus));
+		result["bus"] = Node(string(static_cast<Bus*>(item.get())->bus));
 		result["span_count"] = Node(static_cast<double>(static_cast<Bus*>(item.get())->spans));
 	}
 	else throw invalid_argument("Unknown item type");
@@ -60,7 +60,7 @@ Json::Node NodeFromRoute(GetRouteInfo info) {
 		result["total_time"] = Node(info.total_time);
 
 		vector<Node> items;
-		for (auto&& item : info.items) {
+		for (auto& item : info.items) {
 			items.push_back(NodeFromItem(move(item)));
 		}
 		result["items"] = Node(move(items));
